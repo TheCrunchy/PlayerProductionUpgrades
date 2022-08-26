@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PlayerProductionUpgrades.Models;
 using PlayerProductionUpgrades.Upgrades;
 
 namespace PlayerProductionUpgrades.Storage
@@ -22,27 +23,53 @@ namespace PlayerProductionUpgrades.Storage
 
         public void LoadUpgrades()
         {
-            foreach (var s in Directory.GetFiles($"{FolderPath}//Upgrades//", "*", SearchOption.AllDirectories))
+            GenerateExamples();
+            foreach (var filePath in Directory.GetFiles($"{FolderPath}//Upgrades//", "*", SearchOption.AllDirectories))
             {
-                try
-                {
-                    var upgrade = Utils.ReadFromJsonFile<Upgrade>(s);
-                    upgrade.PutBuffedInDictionary();
+                LoadFile(filePath);
+            }
+        }
 
-                    if (Upgrades.TryGetValue(upgrade.Type, out var temp))
-                    {
-                        if (temp.ContainsKey(upgrade.UpgradeId)) continue;
-                        temp.Add(upgrade.UpgradeId, upgrade);
-                    }
-                    else
-                    {
-                        Upgrades.Add(upgrade.Type, new Dictionary<int, Upgrade> { { upgrade.UpgradeId, upgrade } });
-                    }
-                }
-                catch (Exception e)
+        public void GenerateExamples()
+        {
+            foreach (var type in Enum.GetNames(typeof(UpgradeType)))
+            {
+                var path = $"{FolderPath}//Upgrades//{type}";
+                Directory.CreateDirectory(path);
+                if (File.Exists($"{path}//Example.json")) continue;
+                var upgrade = new Upgrade
                 {
-                    Core.Log.Error($"Error on file {s} {e}");
+                    Type = (UpgradeType)Enum.Parse(typeof(UpgradeType), type)
+                };
+                var list = new BuffList();
+                list.buffs.Add(new BuffedBlock());
+                upgrade.BuffedBlocks.Add(list);
+                var req = new ItemRequirement();
+                upgrade.items.Add(req);
+                Utils.WriteToJsonFile($"{path}//Example.json", upgrade);
+            }
+        }
+
+        public void LoadFile(string FilePath)
+        {
+            try
+            {
+                var upgrade = Utils.ReadFromJsonFile<Upgrade>(FilePath);
+                upgrade.PutBuffedInDictionary();
+
+                if (Upgrades.TryGetValue(upgrade.Type, out var temp))
+                {
+                    if (temp.ContainsKey(upgrade.UpgradeId)) return;
+                    temp.Add(upgrade.UpgradeId, upgrade);
                 }
+                else
+                {
+                    Upgrades.Add(upgrade.Type, new Dictionary<int, Upgrade> { { upgrade.UpgradeId, upgrade } });
+                }
+            }
+            catch (Exception e)
+            {
+                Core.Log.Error($"Error on file {FilePath} {e}");
             }
         }
 

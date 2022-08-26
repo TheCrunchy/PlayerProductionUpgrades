@@ -7,6 +7,7 @@ namespace PlayerProductionUpgrades.Storage
     {
         Dictionary<UpgradeType, Dictionary<int, Upgrade>> Upgrades { get; set; }
         void LoadUpgrades();
+        void GenerateExamples();
         Upgrade GetUpgrade(int Level, UpgradeType type);
     }
 }

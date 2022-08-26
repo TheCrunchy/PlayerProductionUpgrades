@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using PlayerProductionUpgrades.Storage;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -21,7 +22,10 @@ namespace PlayerProductionUpgrades
 {
     public class Core : TorchPluginBase
     {
+        public static string PlayerStoragePath;
         public static Logger Log = LogManager.GetLogger("PlayerProduction");
+        public static IConfigProvider ConfigProvider;
+        public static Config config;
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
@@ -34,10 +38,9 @@ namespace PlayerProductionUpgrades
             }
 
             SetupConfig();
-
+         
         }
 
-        public static string PlayerStoragePath { get; set; }
 
         private void SetupConfig()
         {
@@ -62,13 +65,18 @@ namespace PlayerProductionUpgrades
             {
                 PlayerStoragePath = config.StoragePath;
             }
+
+            ConfigProvider = new JsonConfigProvider(PlayerStoragePath);
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState newState)
         {
-
+            if (newState is TorchSessionState.Loaded)
+            {
+                ConfigProvider.LoadUpgrades();
+            }
         }
-        public static Config config;
+
 
 
     }
