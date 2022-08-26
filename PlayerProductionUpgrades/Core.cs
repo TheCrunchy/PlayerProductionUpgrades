@@ -31,21 +31,31 @@ namespace PlayerProductionUpgrades
         public static IConfigProvider ConfigProvider;
         public static IPlayerStorage PlayerStorageProvider;
         public static Config Config;
+        public static bool AlliancePluginInstalled = false;
+        public static ITorchPlugin Alliances;
+        public static MethodInfo GetAllianceAssemblerModifier;
+        public static MethodInfo GetAllianceRefineryModifier;
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
-
             var sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
-
             if (sessionManager != null)
             {
                 sessionManager.SessionStateChanged += SessionChanged;
             }
-
             SetupConfig();
-         
         }
 
+        public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
+        {
+            if (!Plugins.Plugins.TryGetValue(Guid.Parse("74796707-646f-4ebd-8700-d077a5f47af3"),
+                    out var AlliancePlugin)) return;
+            var type = AlliancePlugin.GetType().Assembly.GetType("AlliancesPlugin.Alliances");
+            GetAllianceRefineryModifier = AlliancePlugin.GetType().GetMethod("GetRefineryYieldMultiplier", BindingFlags.Public | BindingFlags.Static, null, new Type[2] { typeof(long), typeof(MyRefinery) }, null);
+            GetAllianceAssemblerModifier = AlliancePlugin.GetType().GetMethod("GetAssemblerSpeedMultiplier", BindingFlags.Public | BindingFlags.Static, null, new Type[2] { typeof(long), typeof(MyAssembler) }, null);
+            Alliances = AlliancePlugin;
+            AlliancePluginInstalled = true;
+        }
 
         private void SetupConfig()
         {
@@ -79,7 +89,10 @@ namespace PlayerProductionUpgrades
                 ConfigProvider = new XMLConfigProvider(PlayerStoragePath);
                 PlayerStorageProvider = new JsonPlayerStorage(PlayerStoragePath);
                 ConfigProvider.LoadUpgrades();
+
+                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(),Torch.Managers.GetManager<PatchManager>());
             }
+
         }
 
 
