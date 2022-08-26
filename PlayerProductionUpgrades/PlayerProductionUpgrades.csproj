@@ -90,7 +90,7 @@
     <Compile Include="Commands.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="FileUtils.cs" />
+    <Compile Include="Helpers\FileUtils.cs" />
     <Compile Include="Models\BuffedBlock.cs" />
     <Compile Include="Models\BuffList.cs" />
     <Compile Include="Models\PlayerData.cs" />
