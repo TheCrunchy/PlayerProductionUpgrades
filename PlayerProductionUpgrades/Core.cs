@@ -8,9 +8,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using PlayerProductionUpgrades.Helpers;
 using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Storage;
 using PlayerProductionUpgrades.Storage.Configs;
+using PlayerProductionUpgrades.Storage.Data;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -27,7 +29,8 @@ namespace PlayerProductionUpgrades
         public static string PlayerStoragePath;
         public static Logger Log = LogManager.GetLogger("PlayerProduction");
         public static IConfigProvider ConfigProvider;
-        public static Config config;
+        public static IPlayerStorage PlayerStorageProvider;
+        public static Config Config;
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
@@ -46,35 +49,35 @@ namespace PlayerProductionUpgrades
 
         private void SetupConfig()
         {
-            FileUtils utils = new FileUtils();
-
-            if (File.Exists(StoragePath + "\\PlayerUpgradesConfig.xml"))
+            var utils = new FileUtils();
+            var path = StoragePath + "\\PlayerUpgradesConfig.xml";
+            if (File.Exists(path))
             {
-                config = utils.ReadFromXmlFile<Config>(StoragePath + "\\PlayerUpgradesConfig.xml");
-                utils.WriteToXmlFile<Config>(StoragePath + "\\PlayerUpgradesConfig.xml", config, false);
+                Config = utils.ReadFromXmlFile<Config>(path);
+                utils.WriteToXmlFile<Config>(path, Config, false);
             }
             else
             {
-                config = new Config();
-                utils.WriteToXmlFile<Config>(StoragePath + "\\PlayerUpgradesConfig.xml", config, false);
+                Config = new Config();
+                utils.WriteToXmlFile<Config>(path, Config, false);
             }
-            if (config.StoragePath.Equals("Default"))
+            if (Config.StoragePath.Equals("Default"))
             {
                 PlayerStoragePath = Path.Combine($"{StoragePath}//PlayerUpgrades");
                 Directory.CreateDirectory(StoragePath + "//PlayerUpgrades");
             }
             else
             {
-                PlayerStoragePath = config.StoragePath;
+                PlayerStoragePath = Config.StoragePath;
             }
-
-            ConfigProvider = new XMLConfigProvider(PlayerStoragePath);
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState newState)
         {
             if (newState is TorchSessionState.Loaded)
             {
+                ConfigProvider = new XMLConfigProvider(PlayerStoragePath);
+                PlayerStorageProvider = new JsonPlayerStorage(PlayerStoragePath);
                 ConfigProvider.LoadUpgrades();
             }
         }
