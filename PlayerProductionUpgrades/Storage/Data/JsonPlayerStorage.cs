@@ -8,12 +8,12 @@ namespace PlayerProductionUpgrades.Storage.Data
     public class JsonPlayerStorage : IPlayerStorage
     {
         public Dictionary<ulong, PlayerData> PlayerData { get; } = new Dictionary<ulong, PlayerData>();
-        private readonly string FolderPath;
+        private string FolderPath;
         private readonly FileUtils _utils = new FileUtils();
         public JsonPlayerStorage(string FolderPath)
         {
             this.FolderPath = $"{FolderPath}//PlayerData//";
-
+            Directory.CreateDirectory(this.FolderPath);
         }
         public PlayerData GetPlayerData(ulong SteamId)
         {
