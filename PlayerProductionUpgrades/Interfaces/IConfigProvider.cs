@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using PlayerProductionUpgrades.Upgrades;
 
-namespace PlayerProductionUpgrades.Storage
+namespace PlayerProductionUpgrades.Interfaces
 {
     public interface IConfigProvider
     {

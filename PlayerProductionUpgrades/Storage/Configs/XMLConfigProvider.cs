@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Models;
 using PlayerProductionUpgrades.Upgrades;
 
-namespace PlayerProductionUpgrades.Storage
+namespace PlayerProductionUpgrades.Storage.Configs
 {
-    public class JsonConfigProvider : IConfigProvider
+    public class XMLConfigProvider : IConfigProvider
     {
         //i surprised myself with how clean this looks, compared to the other way to do it with multiple dictionaries 
         public Dictionary<UpgradeType, Dictionary<int, Upgrade>> Upgrades { get; set; } = new Dictionary<UpgradeType, Dictionary<int, Upgrade>>();
         private string FolderPath;
-        public JsonConfigProvider(string FolderPath)
+        public XMLConfigProvider(string FolderPath)
         {
             this.FolderPath = $"{FolderPath}//UpgradeConfigs//";
-           
+
         }
 
         public FileUtils Utils = new FileUtils();
@@ -38,7 +36,7 @@ namespace PlayerProductionUpgrades.Storage
             {
                 var path = $"{FolderPath}{type}";
                 Directory.CreateDirectory(path);
-                if (File.Exists($"{path}//Example.json")) continue;
+                if (File.Exists($"{path}//Example.xml")) continue;
                 Enum.TryParse(type, out UpgradeType newType);
                 var upgrade = new Upgrade
                 {
@@ -58,7 +56,7 @@ namespace PlayerProductionUpgrades.Storage
                 };
                 upgrade.items.Add(req);
                 upgrade.items.Add(req2);
-                Utils.WriteToJsonFile($"{path}//Example.json", upgrade);
+                Utils.WriteToXmlFile($"{path}//Example.xml", upgrade);
             }
         }
 
@@ -66,7 +64,7 @@ namespace PlayerProductionUpgrades.Storage
         {
             try
             {
-                var upgrade = Utils.ReadFromJsonFile<Upgrade>(FilePath);
+                var upgrade = Utils.ReadFromXmlFile<Upgrade>(FilePath);
                 upgrade.PutBuffedInDictionary();
 
                 if (Upgrades.TryGetValue(upgrade.Type, out var temp))

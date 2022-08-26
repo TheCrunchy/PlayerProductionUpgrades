@@ -14,9 +14,9 @@ namespace PlayerProductionUpgrades
     {
         [Command("assdebug", "debug command")]
         [Permission(MyPromoteLevel.None)]
-        public void Debug(int amount)
+        public void Debug()
         {
-            
+            RefineryPatch.TEST = !RefineryPatch.TEST;
         }
     }
 }
