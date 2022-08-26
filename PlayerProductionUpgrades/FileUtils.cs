@@ -18,7 +18,7 @@ namespace PlayerProductionUpgrades
             TextWriter writer = null;
             try
             {
-                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite, Newtonsoft.Json.Formatting.Indented);
+                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite, Newtonsoft.Json.Formatting.Indented, new Newtonsoft.Json.Converters.StringEnumConverter());
                 writer = new StreamWriter(filePath, append);
                 writer.Write(contentsToWriteToFile);
             }

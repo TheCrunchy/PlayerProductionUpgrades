@@ -87,6 +87,7 @@
     <Compile Include="Interfaces\IConfigProvider.cs" />
     <Compile Include="Storage\JsonConfigProvider.cs" />
     <Compile Include="Storage\JsonPlayerStorage.cs" />
+    <Compile Include="Storage\XMLConfigProvider.cs" />
     <Compile Include="Upgrades\UpgradeTypes.cs" />
     <Compile Include="Upgrades\Upgrade.cs" />
     <Compile Include="Models\ItemRequirement.cs" />
