@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PlayerProductionUpgrades.Models;
 using VRage.Game;
 
-namespace PlayerProductionUpgrades.Upgrades
+namespace PlayerProductionUpgrades.Models.Upgrades
 {
     public class Upgrade
     {

@@ -97,7 +97,9 @@
     <Compile Include="Helpers\FacUtils.cs" />
     <Compile Include="Helpers\FileUtils.cs" />
     <Compile Include="Helpers\GridFinder.cs" />
+    <Compile Include="Helpers\IdentityHelper.cs" />
     <Compile Include="Helpers\InventoryHelper.cs" />
+    <Compile Include="Helpers\LoginLogoutHelper.cs" />
     <Compile Include="Models\BuffedBlock.cs" />
     <Compile Include="Models\BuffList.cs" />
     <Compile Include="Models\PlayerData.cs" />
@@ -109,8 +111,8 @@
     <Compile Include="Interfaces\IPlayerStorage.cs" />
     <Compile Include="Storage\Data\JsonPlayerStorage.cs" />
     <Compile Include="Storage\Configs\XMLConfigProvider.cs" />
-    <Compile Include="Upgrades\UpgradeTypes.cs" />
-    <Compile Include="Upgrades\Upgrade.cs" />
+    <Compile Include="Models\Upgrades\UpgradeTypes.cs" />
+    <Compile Include="Models\Upgrades\Upgrade.cs" />
     <Compile Include="Models\ItemRequirement.cs" />
   </ItemGroup>
   <ItemGroup />

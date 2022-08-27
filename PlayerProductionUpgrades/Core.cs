@@ -76,8 +76,6 @@ namespace PlayerProductionUpgrades
         }
         public static void SendMessage(string author, string message, Color color, long steamID)
         {
-
-
             Logger _chatLog = LogManager.GetLogger("Chat");
             ScriptedChatMsg scriptedChatMsg1 = new ScriptedChatMsg();
             scriptedChatMsg1.Author = author;
@@ -123,6 +121,8 @@ namespace PlayerProductionUpgrades
                 ConfigProvider.LoadUpgrades();
 
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
+                session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += LoginLogoutHelper.Login;
+                session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += LoginLogoutHelper.Logout;
             }
 
         }

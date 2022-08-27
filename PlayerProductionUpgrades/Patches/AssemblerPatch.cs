@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
+using PlayerProductionUpgrades.Models.Upgrades;
 using Sandbox.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.World;
@@ -24,15 +25,25 @@ namespace PlayerProductionUpgrades.Patches
 
         public static void Patch(PatchContext ctx)
         {
-            //figure out how to do this as a transpiler patch 
-            // ctx.GetPattern(update).Suffixes.Add(patch);
             var harmony = new Harmony("Crunch.Assembler.Patch");
             harmony.PatchAll();
         }
 
         private static float GetPlayerBuffs(long PlayerId, MyAssembler Assembler)
         {
-            return 1;
+            var buff = 0f;
+       
+            var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
+            if (steamId <= 0L) return buff;
+            var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
+            if (upgradeLevel <= 0) return buff;
+            var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
+            var subType = Assembler.BlockDefinition.Id.SubtypeName;
+            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+            buff += temp;
+
+            return buff;
         }
 
         private static float GetBuff(long PlayerId, MyAssembler Assembler)
@@ -40,11 +51,14 @@ namespace PlayerProductionUpgrades.Patches
             double buff = 1;
 
             buff += GetPlayerBuffs(PlayerId, Assembler);
-
+            var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
+            if (steamId <= 0L) return (float) buff;
+            var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
             if (!Core.Config.EnableAlliancePluginBuffs) return (float)buff;
             var methodInput = new object[] { PlayerId, Assembler };
             var multiplier = (double)Core.GetAllianceAssemblerModifier.Invoke(Core.Alliances, methodInput);
-            return (float)(buff *= multiplier);
+            return (float)(buff *= multiplier) *playerData.GetOfflineBuff();
         }
 
         public static float PatchMethod(MyAssembler __instance, MyBlueprintDefinitionBase currentBlueprint)
@@ -59,10 +73,7 @@ namespace PlayerProductionUpgrades.Patches
         {
             static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
             {
-                Core.Log.Info("HELP?");
-                  var replaceMethod= typeof(AssemblerPatch).GetMethod(nameof(PatchMethod));
-            //  var replaceMethodConstructor =
-            //      typeof(AssemblerPatch).GetConstructor(new[] { typeof(MyBlueprintDefinition), typeof(MyAssembler) });
+                var replaceMethod = typeof(AssemblerPatch).GetMethod(nameof(PatchMethod));
                 var codes = new List<CodeInstruction>(instructions);
                 return codes.MethodReplacer(update, replaceMethod);
             }

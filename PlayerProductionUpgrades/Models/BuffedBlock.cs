@@ -8,8 +8,7 @@ namespace PlayerProductionUpgrades.Models
 {
     public class BuffedBlock
     {
-        public Boolean Enabled = false;
-        public string TypeId = "MyRefinery";
+        public Boolean Enabled = true;
         public string SubtypeId = "LargeRefinery";
     }
 }

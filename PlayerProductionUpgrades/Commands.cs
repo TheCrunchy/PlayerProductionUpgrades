@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using PlayerProductionUpgrades.Helpers;
 using PlayerProductionUpgrades.Models;
+using PlayerProductionUpgrades.Models.Upgrades;
 using PlayerProductionUpgrades.Patches;
-using PlayerProductionUpgrades.Upgrades;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Torch.Commands;
@@ -28,7 +28,11 @@ namespace PlayerProductionUpgrades
         [Permission(MyPromoteLevel.None)]
         public void BuyUpgrades(string UpgradeType)
         {
-
+            if (!Core.Config.EnableBuyingUpgrades)
+            {
+                Context.Respond("Buying upgrades is not enabled.");
+                return;
+            }
             var faction = MySession.Static.Factions.GetPlayerFaction(Context.Player.IdentityId);
             if (faction == null)
             {
@@ -75,7 +79,6 @@ namespace PlayerProductionUpgrades
 
             if (upgrade.MoneyRequired > 0)
             {
-
                 if (EconUtils.GetBalance(Context.Player.IdentityId) >= upgrade.MoneyRequired)
                 {
                     if (!InventoryHelper.ConsumeComponents(invents, upgrade.GetItemsRequired(), Context.Player.SteamUserId)) return;
