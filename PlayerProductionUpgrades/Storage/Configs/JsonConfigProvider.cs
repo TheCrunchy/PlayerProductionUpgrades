@@ -25,6 +25,7 @@ namespace PlayerProductionUpgrades.Storage.Configs
         {
             Directory.CreateDirectory($"{FolderPath}");
             GenerateExamples();
+            Upgrades.Clear();
             foreach (var filePath in Directory.GetFiles($"{FolderPath}", "*", SearchOption.AllDirectories))
             {
                 LoadFile(filePath);

@@ -30,10 +30,17 @@ namespace PlayerProductionUpgrades.Patches
             harmony.PatchAll();
         }
 
+        private static float GetPlayerBuffs(long PlayerId, MyAssembler Assembler)
+        {
+            return 1;
+        }
+
         private static float GetBuff(long PlayerId, MyAssembler Assembler)
         {
-            return 5000;
             double buff = 1;
+
+            buff += GetPlayerBuffs(PlayerId, Assembler);
+
             if (!Core.Config.EnableAlliancePluginBuffs) return (float)buff;
             var methodInput = new object[] { PlayerId, Assembler };
             var multiplier = (double)Core.GetAllianceAssemblerModifier.Invoke(Core.Alliances, methodInput);
