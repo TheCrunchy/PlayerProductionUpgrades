@@ -29,7 +29,8 @@ namespace PlayerProductionUpgrades
         [Permission(MyPromoteLevel.Admin)]
         public void ReloadUpgrades()
         {
-
+            Core.ConfigProvider.LoadUpgrades();
+            Context.Respond("Done!");
         }
 
         [Command("buy", "purchase next upgrades")]

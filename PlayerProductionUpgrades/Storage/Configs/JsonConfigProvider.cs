@@ -72,6 +72,10 @@ namespace PlayerProductionUpgrades.Storage.Configs
             try
             {
                 var upgrade = Utils.ReadFromJsonFile<Upgrade>(FilePath);
+                if (!upgrade.Enabled)
+                {
+                    return;
+                }
                 upgrade.PutBuffedInDictionary();
 
                 if (Upgrades.TryGetValue(upgrade.Type, out var temp))
