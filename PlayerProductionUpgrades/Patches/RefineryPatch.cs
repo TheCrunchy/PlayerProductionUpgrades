@@ -29,13 +29,23 @@ namespace PlayerProductionUpgrades.Patches
             ctx.GetPattern(update).Prefixes.Add(patch);
         }
 
-        public static double GetBuff(long PlayerId)
+        public static double GetBuff(long PlayerId, MyRefinery Refinery)
         {
-            return 1;
+            double buff = 1;
+            if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
+            var methodInput = new object[] { PlayerId, Refinery };
+            if (Core.GetAllianceRefineryModifier == null)
+            {
+                return buff;
+            }
+
+            var multiplier = (double)Core.GetAllianceRefineryModifier.Invoke(null, methodInput);
+            return (float)(buff *= multiplier);
         }
+
         public static double GetSpeedBuff(long PlayerId)
         {
-            return 1.5;
+            return 1;
         }
 
         public static bool TEST = false;
@@ -66,8 +76,8 @@ namespace PlayerProductionUpgrades.Patches
             if (blueprintAmount == (MyFixedPoint)0)
                 return false;
 
-            double buff = GetBuff(refin.OwnerId);
-
+            double buff = GetBuff(refin.OwnerId, refin);
+            Core.Log.Info(buff.ToString());
             foreach (var prerequisite in queueItem.Prerequisites)
             {
                 if ((!(MyObjectBuilderSerializer.CreateNewObject((SerializableDefinitionId)prerequisite.Id) is

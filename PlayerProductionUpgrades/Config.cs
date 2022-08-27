@@ -10,5 +10,6 @@ namespace PlayerProductionUpgrades
     {
         public string StoragePath = "Default";
         public bool EnableBuyingUpgrades = false;
+        public bool EnableAlliancePluginBuffs = true;
     }
 }

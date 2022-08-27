@@ -26,14 +26,18 @@ namespace PlayerProductionUpgrades.Patches
             ctx.GetPattern(update).Suffixes.Add(patch);
         }
 
-        private static float GetBuff(long PlayerId)
+        private static float GetBuff(long PlayerId, MyAssembler Assembler)
         {
-            return 1;
+            double buff = 1;
+            if (!Core.Config.EnableAlliancePluginBuffs) return (float) buff;
+            var methodInput = new object[]{ PlayerId, Assembler };
+            var multiplier = (double) Core.GetAllianceAssemblerModifier.Invoke(Core.Alliances, methodInput);
+            return (float)(buff *= multiplier);
         }
 
         public static void PatchMethod(MyBlueprintDefinitionBase currentBlueprint, ref float __result, MyAssembler __instance)
         {
-            var buff = GetBuff(__instance.OwnerId);
+            var buff = GetBuff(__instance.OwnerId, __instance);
             __result *= buff;
         }
     }

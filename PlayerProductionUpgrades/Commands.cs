@@ -16,7 +16,9 @@ namespace PlayerProductionUpgrades
         [Permission(MyPromoteLevel.None)]
         public void Debug()
         {
-            RefineryPatch.TEST = !RefineryPatch.TEST;
+            Core.Config.EnableAlliancePluginBuffs = !Core.Config.EnableAlliancePluginBuffs;
+            Context.Respond($"Toggled to {Core.Config.EnableAlliancePluginBuffs}");
+            Context.Respond($"Alliance plugin installed: {Core.AlliancePluginInstalled}");
         }
     }
 }

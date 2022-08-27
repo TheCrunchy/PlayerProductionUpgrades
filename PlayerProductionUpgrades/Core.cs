@@ -46,15 +46,30 @@ namespace PlayerProductionUpgrades
             SetupConfig();
         }
 
-        public static void InitPluginDependencies(PluginManager Plugins, PatchManager Patches)
+        public static void InitPluginDependencies(PluginManager Plugins)
         {
-            if (!Plugins.Plugins.TryGetValue(Guid.Parse("74796707-646f-4ebd-8700-d077a5f47af3"),
-                    out var AlliancePlugin)) return;
-            var type = AlliancePlugin.GetType().Assembly.GetType("AlliancesPlugin.Alliances");
-            GetAllianceRefineryModifier = AlliancePlugin.GetType().GetMethod("GetRefineryYieldMultiplier", BindingFlags.Public | BindingFlags.Static, null, new Type[2] { typeof(long), typeof(MyRefinery) }, null);
-            GetAllianceAssemblerModifier = AlliancePlugin.GetType().GetMethod("GetAssemblerSpeedMultiplier", BindingFlags.Public | BindingFlags.Static, null, new Type[2] { typeof(long), typeof(MyAssembler) }, null);
-            Alliances = AlliancePlugin;
-            AlliancePluginInstalled = true;
+            if (Plugins.Plugins.TryGetValue(Guid.Parse("74796707-646f-4ebd-8700-d077a5f47af3"),
+                    out var AlliancePlugin))
+            {
+                try
+                {
+                    var AllianceIntegration =
+                        AlliancePlugin.GetType().Assembly.GetType("AlliancesPlugin.Integrations.AllianceIntegrationCore");
+
+                    GetAllianceRefineryModifier = AllianceIntegration.GetMethod("GetRefineryYieldMultiplier", BindingFlags.Public | BindingFlags.Static);
+                    GetAllianceAssemblerModifier = AllianceIntegration.GetMethod("GetAssemblerSpeedMultiplier", BindingFlags.Public | BindingFlags.Static);
+                    Alliances = AlliancePlugin;
+                    AlliancePluginInstalled = true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error loading the alliance integration for upgrades");
+                }
+            }
+            else
+            {
+                Log.Info("Alliances not installed");
+            }
         }
 
         private void SetupConfig()
@@ -90,13 +105,10 @@ namespace PlayerProductionUpgrades
                 PlayerStorageProvider = new JsonPlayerStorage(PlayerStoragePath);
                 ConfigProvider.LoadUpgrades();
 
-                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>(),Torch.Managers.GetManager<PatchManager>());
+                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
             }
 
         }
-
-
-
     }
 }
 
