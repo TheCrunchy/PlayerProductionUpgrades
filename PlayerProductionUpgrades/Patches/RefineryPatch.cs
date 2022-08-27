@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using PlayerProductionUpgrades.Upgrades;
 using Sandbox.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Multiplayer;
@@ -32,6 +33,17 @@ namespace PlayerProductionUpgrades.Patches
         public static double GetBuff(long PlayerId, MyRefinery Refinery)
         {
             double buff = 1;
+            var SteamId = MySession.Static.Players.TryGetSteamId(PlayerId);
+            if (SteamId == 0L)
+            {
+                return 1;
+            }
+
+            var PlayerLevel = Core.PlayerStorageProvider.GetPlayerData(SteamId)
+                .GetUpgradeLevel(UpgradeType.RefineryYield);
+
+
+
             if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
             if (Core.GetAllianceRefineryModifier == null)
@@ -41,8 +53,8 @@ namespace PlayerProductionUpgrades.Patches
 
             var multiplier = (double)Core.GetAllianceRefineryModifier.Invoke(null, methodInput);
             return (float)(buff *= multiplier);
-        }
 
+        }
         public static double GetSpeedBuff(long PlayerId)
         {
             return 1;
@@ -50,62 +62,51 @@ namespace PlayerProductionUpgrades.Patches
 
         public static bool TEST = false;
 
-        public static Boolean ChangeRequirementsToResults(
-     MyBlueprintDefinitionBase queueItem,
-     MyFixedPoint blueprintAmount, MyRefinery __instance)
+        public static Boolean ChangeRequirementsToResults(MyBlueprintDefinitionBase queueItem, MyFixedPoint blueprintAmount, MyRefinery __instance)
         {
-
-
-            MyRefinery refin = __instance;
-
-            if (refin.BlockDefinition as MyRefineryDefinition == null)
+            if (__instance.BlockDefinition as MyRefineryDefinition == null)
             {
                 return false;
             }
+            var speedBuff = GetSpeedBuff(__instance.OwnerId);
+            blueprintAmount *= (MyFixedPoint)speedBuff;
 
-            var speedBuff = GetSpeedBuff(refin.OwnerId);
-            if (TEST)
-            {
-                blueprintAmount *= (MyFixedPoint)speedBuff;
-            }
-
-            if (!Sync.IsServer || MySession.Static == null || (queueItem == null || queueItem.Prerequisites == null) || (refin.OutputInventory == null || refin.InputInventory == null || (queueItem.Results == null)))
+            if (!Sync.IsServer || MySession.Static == null || (queueItem == null || queueItem.Prerequisites == null) || (__instance.OutputInventory == null || __instance.InputInventory == null || (queueItem.Results == null)))
                 return false;
             if (!MySession.Static.CreativeMode)
-                blueprintAmount = MyFixedPoint.Min(refin.OutputInventory.ComputeAmountThatFits(queueItem), blueprintAmount);
+                blueprintAmount = MyFixedPoint.Min(__instance.OutputInventory.ComputeAmountThatFits(queueItem), blueprintAmount);
             if (blueprintAmount == (MyFixedPoint)0)
                 return false;
 
-            double buff = GetBuff(refin.OwnerId, refin);
-            Core.Log.Info(buff.ToString());
+            double buff = GetBuff(__instance.OwnerId, __instance);
+
             foreach (var prerequisite in queueItem.Prerequisites)
             {
                 if ((!(MyObjectBuilderSerializer.CreateNewObject((SerializableDefinitionId)prerequisite.Id) is
                         MyObjectBuilder_PhysicalObject newObject))) continue;
 
-                refin.InputInventory.RemoveItemsOfType((MyFixedPoint)((float)blueprintAmount * (float)prerequisite.Amount), newObject, false, false);
-                var itemAmount = refin.InputInventory.GetItemAmount(prerequisite.Id, MyItemFlags.None, false);
+                __instance.InputInventory.RemoveItemsOfType((MyFixedPoint)((float)blueprintAmount * (float)prerequisite.Amount), newObject, false, false);
+                var itemAmount = __instance.InputInventory.GetItemAmount(prerequisite.Id, MyItemFlags.None, false);
                 if (itemAmount < (MyFixedPoint)0.01f)
-                    refin.InputInventory.RemoveItemsOfType(itemAmount, prerequisite.Id, MyItemFlags.None, false);
+                    __instance.InputInventory.RemoveItemsOfType(itemAmount, prerequisite.Id, MyItemFlags.None, false);
             }
             foreach (var result in queueItem.Results)
             {
                 if ((!(MyObjectBuilderSerializer.CreateNewObject((SerializableDefinitionId)result.Id) is
                         MyObjectBuilder_PhysicalObject newObject))) continue;
 
-                var def = refin.BlockDefinition as MyRefineryDefinition;
-                var num = (float)result.Amount * def.MaterialEfficiency * refin.UpgradeValues["Effectiveness"];
-                refin.OutputInventory.AddItems((MyFixedPoint)((float)blueprintAmount * num * buff), (MyObjectBuilder_Base)newObject);
+                var def = __instance.BlockDefinition as MyRefineryDefinition;
+                var num = (float)result.Amount * def.MaterialEfficiency * __instance.UpgradeValues["Effectiveness"];
+                __instance.OutputInventory.AddItems((MyFixedPoint)((float)blueprintAmount * num * buff), (MyObjectBuilder_Base)newObject);
             }
 
-            //  ref.RemoveFirstQueueItemAnnounce(blueprintAmount, 0.0f);
             if (RemoveQueue == null)
             {
-                Type change = refin.GetType().Assembly.GetType("Sandbox.Game.Entities.Cube.MyProductionBlock");
+                Type change = __instance.GetType().Assembly.GetType("Sandbox.Game.Entities.Cube.MyProductionBlock");
                 RemoveQueue = change.GetMethod("RemoveFirstQueueItemAnnounce", BindingFlags.NonPublic | BindingFlags.Instance);
             }
             var MethodInput = new object[] { blueprintAmount, 0.0f };
-            RemoveQueue?.Invoke(refin, MethodInput);
+            RemoveQueue?.Invoke(__instance, MethodInput);
 
             return false;
         }
