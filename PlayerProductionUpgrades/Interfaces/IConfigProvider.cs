@@ -9,5 +9,6 @@ namespace PlayerProductionUpgrades.Interfaces
         void LoadUpgrades();
         void GenerateExamples();
         Upgrade GetUpgrade(int Level, UpgradeType type);
+        bool CanUpgrade(int CurrentLevel, UpgradeType type);
     }
 }

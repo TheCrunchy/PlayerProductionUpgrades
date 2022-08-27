@@ -93,7 +93,11 @@
     <Compile Include="Commands.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="Helpers\EconUtils.cs" />
+    <Compile Include="Helpers\FacUtils.cs" />
     <Compile Include="Helpers\FileUtils.cs" />
+    <Compile Include="Helpers\GridFinder.cs" />
+    <Compile Include="Helpers\InventoryHelper.cs" />
     <Compile Include="Models\BuffedBlock.cs" />
     <Compile Include="Models\BuffList.cs" />
     <Compile Include="Models\PlayerData.cs" />

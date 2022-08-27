@@ -31,7 +31,10 @@ namespace PlayerProductionUpgrades.Storage.Configs
                 LoadFile(filePath);
             }
         }
-
+        public bool CanUpgrade(int CurrentLevel, UpgradeType type)
+        {
+            return Upgrades.TryGetValue(type, out var levels) && levels.ContainsKey(CurrentLevel + 1);
+        }
         public void GenerateExamples()
         {
             foreach (var type in Enum.GetNames(typeof(UpgradeType)))

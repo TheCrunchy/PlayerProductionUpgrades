@@ -13,6 +13,8 @@ using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Storage;
 using PlayerProductionUpgrades.Storage.Configs;
 using PlayerProductionUpgrades.Storage.Data;
+using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.Multiplayer;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -21,6 +23,7 @@ using Torch.API.Session;
 using Torch.Managers;
 using Torch.Managers.PatchManager;
 using Torch.Session;
+using VRageMath;
 
 namespace PlayerProductionUpgrades
 {
@@ -70,6 +73,20 @@ namespace PlayerProductionUpgrades
             {
                 Log.Info("Alliances not installed");
             }
+        }
+        public static void SendMessage(string author, string message, Color color, long steamID)
+        {
+
+
+            Logger _chatLog = LogManager.GetLogger("Chat");
+            ScriptedChatMsg scriptedChatMsg1 = new ScriptedChatMsg();
+            scriptedChatMsg1.Author = author;
+            scriptedChatMsg1.Text = message;
+            scriptedChatMsg1.Font = "White";
+            scriptedChatMsg1.Color = color;
+            scriptedChatMsg1.Target = Sync.Players.TryGetIdentityId((ulong)steamID);
+            ScriptedChatMsg scriptedChatMsg2 = scriptedChatMsg1;
+            MyMultiplayerBase.SendScriptedChatMessage(ref scriptedChatMsg2);
         }
 
         private void SetupConfig()

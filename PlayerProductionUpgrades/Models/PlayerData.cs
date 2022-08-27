@@ -42,7 +42,7 @@ namespace PlayerProductionUpgrades.Models
         {
             if (UpgradeLevels.TryGetValue(Type, out var level))
             {
-                level += 1;
+                UpgradeLevels[Type] = level + 1;
             }
             else
             {

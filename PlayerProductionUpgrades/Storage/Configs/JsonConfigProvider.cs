@@ -21,6 +21,11 @@ namespace PlayerProductionUpgrades.Storage.Configs
 
         public FileUtils Utils = new FileUtils();
 
+        public bool CanUpgrade(int CurrentLevel, UpgradeType type)
+        {
+            return Upgrades.TryGetValue(type, out var levels) && levels.ContainsKey(CurrentLevel + 1);
+        }
+
         public void LoadUpgrades()
         {
             Directory.CreateDirectory($"{FolderPath}");
