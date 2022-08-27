@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using PlayerProductionUpgrades.Helpers;
 using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Models;
-using PlayerProductionUpgrades.Upgrades;
 
 namespace PlayerProductionUpgrades.Storage.Data
 {
@@ -34,8 +34,7 @@ namespace PlayerProductionUpgrades.Storage.Data
             var newData = new PlayerData();
             newData.SetupNew();
             newData.SteamId = SteamId;
-            PlayerData.Add(SteamId, newData);
-            _utils.WriteToJsonFile(path, newData);
+            SavePlayerData(newData);
             return newData;
         }
 
@@ -43,6 +42,8 @@ namespace PlayerProductionUpgrades.Storage.Data
         {
             var path = $"{FolderPath}//{data.SteamId}.json";
             _utils.WriteToJsonFile(path, data);
+            PlayerData.Remove(data.SteamId);
+            PlayerData.Add(data.SteamId, data);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.IO;
 using PlayerProductionUpgrades.Helpers;
 using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Models;
-using PlayerProductionUpgrades.Upgrades;
+using PlayerProductionUpgrades.Models.Upgrades;
 
 namespace PlayerProductionUpgrades.Storage.Configs
 {

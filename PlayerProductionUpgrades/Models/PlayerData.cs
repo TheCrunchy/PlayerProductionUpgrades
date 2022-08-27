@@ -34,13 +34,7 @@ namespace PlayerProductionUpgrades.Models
             var minimum = (int)(LastLogin - LastLogout).TotalHours;
             if (minimum <= Core.Config.MinimumHoursToBuff) return GetBuff();
             if (DateTime.Now < LastLogout) return GetBuff();
-            var hours = 0;
-            hours = (int)(DateTime.Now - LastLogout).TotalHours;
-            if (hours > Core.Config.MaximumHoursToBuff)
-            {
-                hours = Core.Config.MaximumHoursToBuff;
-            }
-            BuffedUntil = DateTime.Now.AddHours(hours);
+            BuffedUntil = DateTime.Now.AddHours(Core.Config.HoursBuffLasts);
             return GetBuff();
         }
         private float GetBuff()

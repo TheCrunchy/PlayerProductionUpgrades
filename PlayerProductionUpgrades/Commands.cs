@@ -24,6 +24,14 @@ namespace PlayerProductionUpgrades
     [Category("upgrades")]
     public class Commands : CommandModule
     {
+
+        [Command("reload", "reload upgrades")]
+        [Permission(MyPromoteLevel.Admin)]
+        public void ReloadUpgrades()
+        {
+
+        }
+
         [Command("buy", "purchase next upgrades")]
         [Permission(MyPromoteLevel.None)]
         public void BuyUpgrades(string UpgradeType)

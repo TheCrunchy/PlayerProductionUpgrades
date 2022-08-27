@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using PlayerProductionUpgrades.Upgrades;
+using PlayerProductionUpgrades.Models.Upgrades;
 
 namespace PlayerProductionUpgrades.Interfaces
 {
