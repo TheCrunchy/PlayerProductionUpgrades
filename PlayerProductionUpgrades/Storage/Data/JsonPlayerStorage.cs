@@ -28,6 +28,7 @@ namespace PlayerProductionUpgrades.Storage.Data
             if (File.Exists(path))
             {
                 var existing = _utils.ReadFromJsonFile<PlayerData>(path);
+                PlayerData.Remove(SteamId);
                 PlayerData.Add(SteamId, existing);
                 return existing;
             }

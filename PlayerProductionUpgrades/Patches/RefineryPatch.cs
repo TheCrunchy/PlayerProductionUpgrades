@@ -96,7 +96,6 @@ namespace PlayerProductionUpgrades.Patches
                 offlineBuff = playerData.GetOfflineBuff();
             }
 
-            buff *= offlineBuff;
             speedBuff *= offlineBuff;
             blueprintAmount *= (MyFixedPoint)speedBuff;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Server;
 using Sandbox.Game.World;
 using Torch.API;
 
@@ -18,6 +19,7 @@ namespace PlayerProductionUpgrades.Helpers
             }
             var data = Core.PlayerStorageProvider.LoadPlayerData(p.SteamId);
             data.SetLastLogin();
+            data.SetBuffedHours();
             Core.PlayerStorageProvider.SavePlayerData(data);
         }
 

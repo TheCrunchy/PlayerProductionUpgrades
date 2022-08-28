@@ -12,9 +12,10 @@ namespace PlayerProductionUpgrades.Models
     {
         public ulong SteamId { get; set; }
         public Dictionary<UpgradeType, int> UpgradeLevels { get; set; } = new Dictionary<UpgradeType, int>();
-        public DateTime LastLogout { get; set; } = DateTime.Now;
-        public DateTime LastLogin { get; set; } = DateTime.Now;
-        public DateTime BuffedUntil { get; set; } = DateTime.Now;
+        public DateTime LastLogout { get; set; }
+        public DateTime LastLogin { get; set; }
+        public DateTime BuffedUntil { get; set; }
+        public int BuffedHoursMultiplier { get; set; }
 
         public void SetLastLogin()
         {
@@ -24,29 +25,33 @@ namespace PlayerProductionUpgrades.Models
         {
             LastLogout = DateTime.Now;
         }
+
+        public void SetBuffedHours()
+        {
+            if (DateTime.Now < BuffedUntil) return;
+            var minimum = (int)(LastLogin - LastLogout).TotalHours;
+            if (minimum <= Core.Config.MinimumHoursToBuff) return;
+            if (DateTime.Now < LastLogout) return;
+            BuffedUntil = DateTime.Now.AddHours(Core.Config.HoursBuffLasts);
+            BuffedHoursMultiplier = (int)(LastLogin - LastLogout).TotalHours;
+            if (BuffedHoursMultiplier > Core.Config.MaximumHoursToBuff)
+            {
+                BuffedHoursMultiplier = Core.Config.MaximumHoursToBuff;
+            }
+        }
+
         public float GetOfflineBuff()
         {
             if (!Core.Config.GiveBuffForOfflineHours)
             {
-                return 0;
+                return 1;
             }
-            float buff = 0;
-            var minimum = (int)(LastLogin - LastLogout).TotalHours;
-            if (minimum <= Core.Config.MinimumHoursToBuff) return GetBuff();
-            if (DateTime.Now < LastLogout) return GetBuff();
-            BuffedUntil = DateTime.Now.AddHours(Core.Config.HoursBuffLasts);
             return GetBuff();
         }
         private float GetBuff()
         {
-            if (DateTime.Now >= BuffedUntil) return 0;
-            var hours = (int)(BuffedUntil - DateTime.Now).TotalHours;
-            if (hours > Core.Config.MaximumHoursToBuff)
-            {
-                hours = Core.Config.MaximumHoursToBuff;
-            }
-            var buff = 1 + (hours * Core.Config.BuffPerHour);
-            return buff;
+            if (DateTime.Now >= BuffedUntil) return 1;
+            return 1 + (BuffedHoursMultiplier * Core.Config.BuffPerHour);
         }
 
         public void SetBuffedUntil(int hours)
