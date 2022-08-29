@@ -14,6 +14,8 @@ namespace PlayerProductionUpgrades.Models.Upgrades
         public List<ItemRequirement> items = new List<ItemRequirement>();
         public List<BuffList> BuffedBlocks = new List<BuffList>();
         private readonly Dictionary<string, double> buffed = new Dictionary<string, double>();
+        public long PricePerHour = 100000;
+        public int MaxBuyableHours = 50;
         public Dictionary<MyDefinitionId, int> GetItemsRequired()
         {
             var temp = new Dictionary<MyDefinitionId, int>();

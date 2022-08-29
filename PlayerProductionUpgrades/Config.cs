@@ -16,5 +16,6 @@ namespace PlayerProductionUpgrades
         public int MaximumHoursToBuff = 8;
         public int MinimumHoursToBuff = 2;
         public int HoursBuffLasts = 1;
+        public bool MakePlayersPayPerHour = false;
     }
 }

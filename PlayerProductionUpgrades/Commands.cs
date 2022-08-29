@@ -24,13 +24,138 @@ namespace PlayerProductionUpgrades
     [Category("upgrades")]
     public class Commands : CommandModule
     {
-
         [Command("reload", "reload upgrades")]
         [Permission(MyPromoteLevel.Admin)]
         public void ReloadUpgrades()
         {
             Core.ConfigProvider.LoadUpgrades();
             Context.Respond("Done!");
+        }
+
+        public void HandleAssembleHourPurchase(PlayerData Data, int Hours, long PlayerId)
+        {
+            var level = Data.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
+            if (level <= 0)
+            {
+                Context.Respond("You have not purchased any assembler upgrades.");
+                return;
+            }
+            var upgrade = Core.ConfigProvider.GetUpgrade(level, UpgradeType.AssemblerSpeed);
+            if (upgrade == null)
+            {
+                Context.Respond($"There is an error obtaining that assembler speed upgrade level {level}. ");
+                return;
+            }
+
+            var cost = upgrade.PricePerHour * Hours;
+            var max = upgrade.MaxBuyableHours;
+            var current = 0;
+            if (DateTime.Now > Data.PricePerHourEndTimeAssembler)
+            {
+                current = 0;
+            }
+            else
+            {
+                current = (int)(Data.PricePerHourEndTimeAssembler - DateTime.Now).TotalHours;
+            }
+            if (current > max)
+            {
+                Context.Respond("Maximum buyable achieved.");
+                return;
+            }
+            if (current + Hours > max)
+            {
+                Context.Respond($"You can only buy {max - current} hours.");
+                return;
+            }
+
+            if (EconUtils.GetBalance(PlayerId) < cost)
+            {
+                Context.Respond($"You cannot afford the cost of {cost:n0)}");
+                return;
+            }
+            Context.Respond("Hours added!");
+            EconUtils.TakeMoney(PlayerId, cost);
+            Data.PricePerHourEndTimeAssembler = Data.PricePerHourEndTimeAssembler.AddHours(Hours);
+            Core.PlayerStorageProvider.SavePlayerData(Data);
+        }
+        public void HandleRefineryHourPurchase(PlayerData Data, int Hours, long PlayerId)
+        {
+            var upgradeType = UpgradeType.RefinerySpeed;
+            var level = Data.GetUpgradeLevel(UpgradeType.RefineryYield);
+            var level2 = Data.GetUpgradeLevel(UpgradeType.RefinerySpeed);
+            if (level >= level2)
+            {
+                upgradeType = UpgradeType.RefineryYield;
+            }
+            else
+            {
+                level = level2;
+                upgradeType = UpgradeType.RefinerySpeed;
+            }
+
+            if (level <= 0)
+            {
+                Context.Respond("You have not purchased any refinery upgrades.");
+                return;
+            }
+            var upgrade = Core.ConfigProvider.GetUpgrade(level, upgradeType);
+            if (upgrade == null)
+            {
+                Context.Respond($"There is an error obtaining that {upgradeType} upgrade level {level}. ");
+                return;
+            }
+
+            var cost = upgrade.PricePerHour * Hours;
+            var max = upgrade.MaxBuyableHours;
+            var current = 0;
+            if (DateTime.Now > Data.PricePerHourEndTimeRefinery)
+            {
+                current = 0;
+            }
+            else
+            {
+                current = (int)(Data.PricePerHourEndTimeRefinery - DateTime.Now).TotalHours;
+            }
+            if (current > max)
+            {
+                Context.Respond("Maximum buyable achieved.");
+                return;
+            }
+            if (current + Hours > max)
+            {
+                Context.Respond($"You can only buy {max - current} hours.");
+                return;
+            }
+
+            if (EconUtils.GetBalance(PlayerId) < cost)
+            {
+                Context.Respond($"You cannot afford the cost of {cost:n0)}");
+                return;
+            }
+            Context.Respond("Hours added!");
+            EconUtils.TakeMoney(PlayerId, cost);
+            Data.PricePerHourEndTimeAssembler = Data.PricePerHourEndTimeAssembler.AddHours(Hours);
+            Core.PlayerStorageProvider.SavePlayerData(Data);
+        }
+
+        [Command("hours", "purchase hours")]
+        [Permission(MyPromoteLevel.None)]
+        public void BuyHours(string Type, int hours)
+        {
+            var data = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
+            switch (Type.ToLower())
+            {
+                case "assembler":
+                    HandleAssembleHourPurchase(data, hours, Context.Player.IdentityId);
+                    break;
+                case "refinery":
+                    HandleRefineryHourPurchase(data, hours, Context.Player.IdentityId);
+                    break;
+                default:
+                    Context.Respond("Available types are Assembler and Refinery");
+                    return;
+            }
         }
 
         [Command("buy", "purchase next upgrades")]
@@ -49,8 +174,8 @@ namespace PlayerProductionUpgrades
                 return;
             }
             if (!Enum.TryParse(UpgradeType, out UpgradeType type)) return;
-            var PlayerData = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
-            var level = PlayerData.GetUpgradeLevel(type);
+            var playerData = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
+            var level = playerData.GetUpgradeLevel(type);
             if (!Core.ConfigProvider.CanUpgrade(level, type))
             {
                 Context.Respond("No more upgrades available.");
@@ -92,9 +217,9 @@ namespace PlayerProductionUpgrades
                 {
                     if (!InventoryHelper.ConsumeComponents(invents, upgrade.GetItemsRequired(), Context.Player.SteamUserId)) return;
                     EconUtils.TakeMoney(Context.Player.IdentityId, upgrade.MoneyRequired);
-                    Core.SendMessage("[Upgrades]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
-                    PlayerData.AddUpgradeLevel(type);
-                    Core.PlayerStorageProvider.SavePlayerData(PlayerData);
+                    Core.SendMessage("[Upgrades]", "Upgrading. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
+                    playerData.AddUpgradeLevel(type);
+                    Core.PlayerStorageProvider.SavePlayerData(playerData);
                 }
                 else
                 {
@@ -104,9 +229,9 @@ namespace PlayerProductionUpgrades
             else
             {
                 if (!InventoryHelper.ConsumeComponents(invents, upgrade.GetItemsRequired(), Context.Player.SteamUserId)) return;
-                Core.SendMessage("[Upgrades]", "Upgrading Assembler. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
-                PlayerData.AddUpgradeLevel(type);
-                Core.PlayerStorageProvider.SavePlayerData(PlayerData);
+                Core.SendMessage("[Upgrades]", "Upgrading. Items taken.", Color.LightBlue, (long)Context.Player.SteamUserId);
+                playerData.AddUpgradeLevel(type);
+                Core.PlayerStorageProvider.SavePlayerData(playerData);
             }
         }
 
@@ -115,13 +240,24 @@ namespace PlayerProductionUpgrades
         public void ViewUpgrades()
         {
             var sb = new StringBuilder();
+            var playerData = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
+            if (Core.Config.MakePlayersPayPerHour)
+            {
+                if (DateTime.Now < playerData.PricePerHourEndTimeAssembler)
+                {
+                    sb.AppendLine($"Refinery Hours: {(playerData.PricePerHourEndTimeAssembler - DateTime.Now).TotalHours}");
+                }
+                if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
+                {
+                    sb.AppendLine($"Assembler Hours: {(playerData.PricePerHourEndTimeRefinery - DateTime.Now).TotalHours}");
+                }
+            }
             foreach (var upgradeTypes in Core.ConfigProvider.Upgrades)
             {
-                foreach (var upgradeLevels in upgradeTypes.Value)
+                foreach (var (k, upgrade) in upgradeTypes.Value)
                 {
-                    sb.AppendLine($"Current Upgrade Level {Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId).GetUpgradeLevel(upgradeTypes.Key)} for {upgradeLevels.Key}");
-                    var upgrade = upgradeLevels.Value;
-                    sb.AppendLine("Upgrade number " + upgradeLevels.Key);
+                    sb.AppendLine($"Current Upgrade Level {playerData.GetUpgradeLevel(upgradeTypes.Key)} for {k}");
+                    sb.AppendLine("Upgrade number " + k);
                     if (upgrade.MoneyRequired > 0)
                     {
                         sb.AppendLine($"Costs {upgrade.MoneyRequired:n0} SC.");

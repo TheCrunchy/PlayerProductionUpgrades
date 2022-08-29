@@ -15,6 +15,8 @@ namespace PlayerProductionUpgrades.Models
         public DateTime LastLogout { get; set; }
         public DateTime LastLogin { get; set; }
         public DateTime BuffedUntil { get; set; }
+        public DateTime PricePerHourEndTimeAssembler { get; set; }
+        public DateTime PricePerHourEndTimeRefinery { get; set; }
         public int BuffedHoursMultiplier { get; set; }
 
         public void SetLastLogin()

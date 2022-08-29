@@ -46,13 +46,32 @@ namespace PlayerProductionUpgrades.Patches
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
-            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
-            if (upgradeLevel <= 0) return buff;
-            var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
-            var subType = Refinery.BlockDefinition.Id.SubtypeName;
-            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-            buff += temp;
 
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
+            if (upgradeLevel > 0)
+            {
+                var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
+
+                if (upgrade != null)
+                {
+                    if (Core.Config.MakePlayersPayPerHour)
+                    {
+                        if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
+                        {
+                            var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                            buff += temp;
+                        }
+                    }
+                    else
+                    {
+                        var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                        var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                        buff += temp;
+                    }
+     
+                }
+            }
 
             if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
@@ -71,12 +90,26 @@ namespace PlayerProductionUpgrades.Patches
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
-            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
-            if (upgradeLevel <= 0) return buff;
-            var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
-            var subType = Refinery.BlockDefinition.Id.SubtypeName;
-            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-            buff += temp;
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.RefinerySpeed);
+            if (upgradeLevel > 0)
+            {
+                if (Core.Config.MakePlayersPayPerHour)
+                {
+                    if (DateTime.Now > playerData.PricePerHourEndTimeRefinery)
+                    {
+                        return buff;
+                    }
+                }
+                var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefinerySpeed);
+                if (upgrade == null) return buff;
+                var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                buff += temp;
+            }
+            else
+            {
+                return buff;
+            }
             return buff;
         }
 
@@ -106,7 +139,7 @@ namespace PlayerProductionUpgrades.Patches
             if (blueprintAmount == (MyFixedPoint)0)
                 return false;
 
-            
+
             foreach (var prerequisite in queueItem.Prerequisites)
             {
                 if ((!(MyObjectBuilderSerializer.CreateNewObject((SerializableDefinitionId)prerequisite.Id) is

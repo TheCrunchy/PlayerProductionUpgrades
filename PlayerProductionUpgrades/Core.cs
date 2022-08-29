@@ -49,6 +49,16 @@ namespace PlayerProductionUpgrades
             SetupConfig();
         }
 
+        public static bool InitPlugins = false;
+        public override void Update()
+        {
+            if (!InitPlugins)
+            {
+                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
+                InitPlugins = true;
+            }
+        }
+
         public static void InitPluginDependencies(PluginManager Plugins)
         {
             if (Plugins.Plugins.TryGetValue(Guid.Parse("74796707-646f-4ebd-8700-d077a5f47af3"),
@@ -73,6 +83,7 @@ namespace PlayerProductionUpgrades
             {
                 Log.Info("Alliances not installed");
             }
+
         }
         public static void SendMessage(string author, string message, Color color, long steamID)
         {
@@ -119,8 +130,6 @@ namespace PlayerProductionUpgrades
                 ConfigProvider = new XMLConfigProvider(PlayerStoragePath);
                 PlayerStorageProvider = new JsonPlayerStorage(PlayerStoragePath);
                 ConfigProvider.LoadUpgrades();
-
-                InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 session.Managers.GetManager<IMultiplayerManagerBase>().PlayerJoined += LoginLogoutHelper.Login;
                 session.Managers.GetManager<IMultiplayerManagerBase>().PlayerLeft += LoginLogoutHelper.Logout;
             }

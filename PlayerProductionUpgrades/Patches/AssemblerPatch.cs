@@ -32,17 +32,26 @@ namespace PlayerProductionUpgrades.Patches
         private static float GetPlayerBuffs(long PlayerId, MyAssembler Assembler)
         {
             var buff = 0f;
-       
+
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
             var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
-            if (upgradeLevel <= 0) return buff;
-            var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
-            var subType = Assembler.BlockDefinition.Id.SubtypeName;
-            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-            buff += temp;
-
+            if (upgradeLevel > 0)
+            {
+                if (Core.Config.MakePlayersPayPerHour)
+                {
+                    if (DateTime.Now > playerData.PricePerHourEndTimeAssembler)
+                    {
+                        return buff;
+                    }
+                }
+                var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
+                if (upgrade == null) return buff;
+                var subType = Assembler.BlockDefinition.Id.SubtypeName;
+                var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                buff += temp;
+            }
             return buff;
         }
 
@@ -52,13 +61,12 @@ namespace PlayerProductionUpgrades.Patches
 
             buff += GetPlayerBuffs(PlayerId, Assembler);
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
-            if (steamId <= 0L) return (float) buff;
+            if (steamId <= 0L) return (float)buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
-            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
             if (!Core.Config.EnableAlliancePluginBuffs) return (float)buff;
             var methodInput = new object[] { PlayerId, Assembler };
             var multiplier = (double)Core.GetAllianceAssemblerModifier.Invoke(Core.Alliances, methodInput);
-            return (float)(buff *= multiplier) *playerData.GetOfflineBuff();
+            return (float)(buff *= multiplier) * playerData.GetOfflineBuff();
         }
 
         public static float PatchMethod(MyAssembler __instance, MyBlueprintDefinitionBase currentBlueprint)
