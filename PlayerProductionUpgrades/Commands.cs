@@ -10,6 +10,7 @@ using PlayerProductionUpgrades.Models;
 using PlayerProductionUpgrades.Models.Upgrades;
 using PlayerProductionUpgrades.Patches;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.World;
 using Torch.Commands;
 using Torch.Commands.Permissions;
@@ -40,6 +41,7 @@ namespace PlayerProductionUpgrades
                 Context.Respond("You have not purchased any assembler upgrades.");
                 return;
             }
+            
             var upgrade = Core.ConfigProvider.GetUpgrade(level, UpgradeType.AssemblerSpeed);
             if (upgrade == null)
             {
