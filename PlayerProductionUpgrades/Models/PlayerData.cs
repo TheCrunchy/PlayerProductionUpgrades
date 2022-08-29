@@ -40,6 +40,9 @@ namespace PlayerProductionUpgrades.Models
             {
                 BuffedHoursMultiplier = Core.Config.MaximumHoursToBuff;
             }
+
+            PricePerHourEndTimeAssembler = PricePerHourEndTimeAssembler.AddHours(BuffedHoursMultiplier);
+            PricePerHourEndTimeRefinery = PricePerHourEndTimeRefinery.AddHours(BuffedHoursMultiplier);
         }
 
         public float GetOfflineBuff()

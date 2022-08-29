@@ -48,11 +48,33 @@ namespace PlayerProductionUpgrades.Storage.Configs
                     Type = newType
                 };
                 var list = new BuffList();
-                list.buffs.Add(new BuffedBlock());
+                if (type.Contains("Refinery"))
+                {
+                    list.buffs.Add(new BuffedBlock()
+                {
+                    Enabled = true,
+                    SubtypeId = "LargeRefineryIndustrial"
+                });
                 list.buffs.Add(new BuffedBlock()
                 {
-                    Enabled = false
+                    Enabled = true,
+                    SubtypeId = "LargeRefinery"
                 });
+                }
+                if (type.Contains("Assembler"))
+                {
+                    list.buffs.Add(new BuffedBlock()
+                    {
+                        Enabled = true,
+                        SubtypeId = "LargeAssemblerIndustrial"
+                    });
+                    list.buffs.Add(new BuffedBlock()
+                    {
+                        Enabled = true,
+                        SubtypeId = "LargeAssembler"
+                    });
+                }
+
                 upgrade.BuffedBlocks.Add(list);
                 var req = new ItemRequirement();
                 var req2 = new ItemRequirement
