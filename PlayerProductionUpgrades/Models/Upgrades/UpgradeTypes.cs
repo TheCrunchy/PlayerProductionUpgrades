@@ -4,6 +4,7 @@
     {
         RefinerySpeed,
         RefineryYield,
-        AssemblerSpeed
+        AssemblerSpeed,
+        Null
     }
 }

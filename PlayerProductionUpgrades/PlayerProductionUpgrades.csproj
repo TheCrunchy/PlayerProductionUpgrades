@@ -105,6 +105,7 @@
     <Compile Include="Models\PlayerData.cs" />
     <Compile Include="Patches\AssemblerPatch.cs" />
     <Compile Include="Patches\GasGeneratorPatch.cs" />
+    <Compile Include="Patches\MyStorePatch.cs" />
     <Compile Include="Patches\RefineryPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Interfaces\IConfigProvider.cs" />

@@ -119,6 +119,7 @@ namespace PlayerProductionUpgrades.Patches
             {
                 return false;
             }
+
             var speedBuff = GetSpeedBuff(__instance.OwnerId, __instance);
             double buff = GetBuff(__instance.OwnerId, __instance);
             var steamId = MySession.Static.Players.TryGetSteamId(__instance.OwnerId);

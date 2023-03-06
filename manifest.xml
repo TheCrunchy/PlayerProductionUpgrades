@@ -2,5 +2,5 @@
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>PlayerProductionUpgrades</Name>
   <Guid>3d3540c3-feca-4ba7-8623-67a2f4308e22</Guid>
-  <Version>v1.11</Version>
+  <Version>v1.12</Version>
 </PluginManifest>

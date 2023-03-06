@@ -40,9 +40,15 @@ namespace PlayerProductionUpgrades.Models
             {
                 BuffedHoursMultiplier = Core.Config.MaximumHoursToBuff;
             }
+            if (DateTime.Now <= PricePerHourEndTimeAssembler || DateTime.Now <= PricePerHourEndTimeAssembler.AddHours(minimum + 1))
+            {
+                PricePerHourEndTimeAssembler = PricePerHourEndTimeAssembler.AddHours(BuffedHoursMultiplier);
+            }
 
-            PricePerHourEndTimeAssembler = PricePerHourEndTimeAssembler.AddHours(BuffedHoursMultiplier);
-            PricePerHourEndTimeRefinery = PricePerHourEndTimeRefinery.AddHours(BuffedHoursMultiplier);
+            if (DateTime.Now <= PricePerHourEndTimeRefinery || DateTime.Now <= PricePerHourEndTimeRefinery.AddHours(minimum + 1))
+            {
+                PricePerHourEndTimeRefinery = PricePerHourEndTimeRefinery.AddHours(BuffedHoursMultiplier);
+            }
         }
 
         public float GetOfflineBuff()
