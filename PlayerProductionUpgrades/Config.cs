@@ -17,5 +17,8 @@ namespace PlayerProductionUpgrades
         public int MinimumHoursToBuff = 2;
         public int HoursBuffLasts = 1;
         public bool MakePlayersPayPerHour = false;
+        public bool DoVoteBuffs = false;
+        public float VoteBuff = 0.50f;
+        public string VoteApiKey = "dont share this";
     }
 }

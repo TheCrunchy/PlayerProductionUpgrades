@@ -37,6 +37,17 @@ namespace PlayerProductionUpgrades.Patches
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
             var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
+            if (Core.Config.DoVoteBuffs)
+            {
+                if (DateTime.Now <= playerData.VoteBuffedUntil)
+                {
+                    buff += Core.Config.VoteBuff;
+                }
+                else
+                {
+                    playerData.AddToChecking();
+                }
+            }
             if (upgradeLevel > 0)
             {
                 if (Core.Config.MakePlayersPayPerHour)

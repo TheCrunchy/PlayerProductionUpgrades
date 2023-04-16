@@ -19,6 +19,27 @@ namespace PlayerProductionUpgrades.Models
         public DateTime PricePerHourEndTimeRefinery { get; set; }
         public int BuffedHoursMultiplier { get; set; }
 
+        public DateTime VoteBuffedUntil { get; set; }
+        private bool AddedToVoteCheck = false;
+
+        public bool NeedsChecking()
+        {
+            return AddedToVoteCheck;
+        }
+
+        public void AddToChecking()
+        {
+            if (AddedToVoteCheck)
+            {
+                return;
+            }
+            AddedToVoteCheck = true;
+            Core.RecheckTimer.Add(this.SteamId, new Core.Lazy()
+            {
+                CheckTime = DateTime.Now
+            });
+        }
+
         public void SetLastLogin()
         {
             LastLogin = DateTime.Now;

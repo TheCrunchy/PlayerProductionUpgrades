@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using PlayerProductionUpgrades.Models;
@@ -41,13 +42,8 @@ namespace PlayerProductionUpgrades.Patches
                 return 1;
             }
 
-            var PlayerLevel = Core.PlayerStorageProvider.GetPlayerData(SteamId)
-                .GetUpgradeLevel(UpgradeType.RefineryYield);
-            var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
-            if (steamId <= 0L) return buff;
-            var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
-
-            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.AssemblerSpeed);
+            var playerData = Core.PlayerStorageProvider.GetPlayerData(SteamId);
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.RefineryYield);
             if (upgradeLevel > 0)
             {
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
@@ -69,10 +65,21 @@ namespace PlayerProductionUpgrades.Patches
                         var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
                         buff += temp;
                     }
-     
+
                 }
             }
 
+            if (Core.Config.DoVoteBuffs)
+            {
+                if (DateTime.Now <= playerData.VoteBuffedUntil)
+                {
+                    buff += Core.Config.VoteBuff;
+                }
+                else
+                {
+                    playerData.AddToChecking();
+                }
+            }
             if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
             if (Core.GetAllianceRefineryModifier == null)
@@ -91,6 +98,19 @@ namespace PlayerProductionUpgrades.Patches
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
             var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.RefinerySpeed);
+
+            if (Core.Config.DoVoteBuffs)
+            {
+                if (DateTime.Now <= playerData.VoteBuffedUntil)
+                {
+                    buff += Core.Config.VoteBuff;
+                }
+                else
+                {
+                    playerData.AddToChecking();
+                }
+            }
+          //  Core.Log.Info($"{buff}");
             if (upgradeLevel > 0)
             {
                 if (Core.Config.MakePlayersPayPerHour)

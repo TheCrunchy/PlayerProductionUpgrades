@@ -13,6 +13,7 @@ using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Storage;
 using PlayerProductionUpgrades.Storage.Configs;
 using PlayerProductionUpgrades.Storage.Data;
+using RestSharp;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Multiplayer;
 using Torch;
@@ -50,13 +51,67 @@ namespace PlayerProductionUpgrades
         }
 
         public static bool InitPlugins = false;
-        public override void Update()
+        public DateTime NextVoteCheck = DateTime.Now.AddMinutes(1);
+        public int ticks = 0;
+        public static Dictionary<ulong, Lazy> RecheckTimer = new Dictionary<ulong, Lazy>();
+
+        public class Lazy
         {
-            if (!InitPlugins)
+            public DateTime CheckTime;
+        }
+        public async override void Update()
+        {
+            if (!InitPlugins && ticks == 0)
             {
                 InitPluginDependencies(Torch.Managers.GetManager<PluginManager>());
                 InitPlugins = true;
             }
+
+            ticks++;
+            if (ticks % 64 != 0) return;
+
+            if (!Core.Config.DoVoteBuffs) return;
+
+            List<ulong> temp = new List<ulong>();
+            var ServerKey = Core.Config.VoteApiKey;
+            foreach (var player in RecheckTimer.Where(x => x.Value.CheckTime <= DateTime.Now))
+            {
+            //    Log.Info($"{player.Key} checking");
+         
+                //var client = new RestClient($"https://space-engineers.com/api/?object=servers&element=voters&key={ServerKey}&month={Period}&format={Format}&rank={Value}&limit={Limit}");
+                var client = new RestClient($"https://space-engineers.com/api/?object=votes&element=claim&key={ServerKey}&steamid={player.Key}");
+                var request = new RestRequest();
+                var result = await client.PostAsync(request);
+                if (result.IsSuccessful)
+                {
+               //     Log.Info($"{result.Content}");
+                    switch (result.Content.ToString())
+                    {
+                        case "1":
+                        case "2":
+                            var playerData = Core.PlayerStorageProvider.GetPlayerData(player.Key);
+                            playerData.VoteBuffedUntil = DateTime.Now.AddHours(24);
+                            PlayerStorageProvider.SavePlayerData(playerData);
+                     //       Log.Info($"{player.Key} has voted and is getting buffed for 24 hours");
+                           temp.Add(player.Key);
+                            break;
+                        default:
+                            RecheckTimer[player.Key].CheckTime = DateTime.Now.AddMinutes(10);
+                      //      Log.Info($"{player.Key} has not voted recheck 1 min");
+                            break;
+                    }
+                }
+                else
+                {
+                //    Log.Info($"{player.Key} failed query");
+                }
+            }
+
+            foreach (var item in temp)
+            {
+                RecheckTimer.Remove(item);
+            }
+
         }
 
         public static void InitPluginDependencies(PluginManager Plugins)
