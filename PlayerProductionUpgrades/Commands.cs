@@ -141,6 +141,24 @@ namespace PlayerProductionUpgrades
             Core.PlayerStorageProvider.SavePlayerData(Data);
         }
 
+        [Command("checkvote", "check if have vote buff")]
+        [Permission(MyPromoteLevel.None)]
+        public void CheckVoteCommand()
+        {
+            var data = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
+
+            if (data.VoteBuffedUntil > DateTime.Now)
+            {
+                var diff = data.VoteBuffedUntil.Subtract(DateTime.Now);
+                Context.Respond($"Buffed for {diff.Hours} Hours {diff.Minutes} Minutes {diff.Seconds}");
+            }
+            else
+            {
+                Context.Respond("You are not buffed.");
+            }
+        }
+
+
         [Command("hours", "purchase hours")]
         [Permission(MyPromoteLevel.None)]
         public void BuyHours(string Type, int hours)
