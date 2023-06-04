@@ -34,7 +34,7 @@ namespace PlayerProductionUpgrades.Models
                 return;
             }
             AddedToVoteCheck = true;
-            Core.RecheckTimer.Add(this.SteamId, new Core.Lazy()
+            Core.RecheckTimer.TryAdd(this.SteamId, new Core.Lazy()
             {
                 CheckTime = DateTime.Now
             });

@@ -82,7 +82,12 @@ namespace PlayerProductionUpgrades.Patches
 
         public static float PatchMethod(MyAssembler __instance, MyBlueprintDefinitionBase currentBlueprint)
         {
-            var speed = (double)(((MyAssemblerDefinition)__instance.BlockDefinition).AssemblySpeed + (double)__instance.UpgradeValues["Productivity"]) * GetBuff(__instance.OwnerId, __instance);
+            var buff = GetBuff(__instance.OwnerId, __instance);
+            if (Core.IsPlayerClustered(__instance.OwnerId, __instance.CubeGrid) && Core.Config.NerfClusteredGrids)
+            {
+                buff *= Core.Config.ClusterNerfDefaultLoses75Percent;
+            }
+            var speed = (double)(((MyAssemblerDefinition)__instance.BlockDefinition).AssemblySpeed + (double)__instance.UpgradeValues["Productivity"]) * buff;
             return (float)Math.Round((double)currentBlueprint.BaseProductionTimeInSeconds * 1000.0 / ((double)MySession.Static.AssemblerSpeedMultiplier * speed));
         }
 

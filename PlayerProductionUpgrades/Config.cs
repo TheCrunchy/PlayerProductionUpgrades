@@ -20,5 +20,10 @@ namespace PlayerProductionUpgrades
         public bool DoVoteBuffs = false;
         public float VoteBuff = 0.50f;
         public string VoteApiKey = "dont share this";
+
+        public float ClusterNerfDefaultLoses75Percent = 0.25f;
+        public int NerfClusteredGridsAboveCount = 3;
+        public bool NerfClusteredGrids = false;
+        public int ClusterDistanceMetres = 15000;
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.World;
 using Torch.Managers.PatchManager;
 using VRage.Game;
 
@@ -26,6 +27,7 @@ namespace PlayerProductionUpgrades.Patches
         public static void Patch(PatchContext ctx)
         {
             //   ctx.GetPattern(update).Suffixes.Add(patch);
+          
         }
 
         public static void ChangeResult(ref MyDefinitionId gasId, ref double __result)

@@ -110,7 +110,7 @@ namespace PlayerProductionUpgrades.Patches
                     playerData.AddToChecking();
                 }
             }
-          //  Core.Log.Info($"{buff}");
+            //  Core.Log.Info($"{buff}");
             if (upgradeLevel > 0)
             {
                 if (Core.Config.MakePlayersPayPerHour)
@@ -151,7 +151,15 @@ namespace PlayerProductionUpgrades.Patches
             }
 
             speedBuff *= offlineBuff;
+            if (Core.IsPlayerClustered(__instance.OwnerId, __instance.CubeGrid) && Core.Config.NerfClusteredGrids)
+            {
+                speedBuff *= Core.Config.ClusterNerfDefaultLoses75Percent;
+                buff *= Core.Config.ClusterNerfDefaultLoses75Percent;
+            }
+
             blueprintAmount *= (MyFixedPoint)speedBuff;
+
+
 
             if (!Sync.IsServer || MySession.Static == null || (queueItem == null || queueItem.Prerequisites == null) || (__instance.OutputInventory == null || __instance.InputInventory == null || (queueItem.Results == null)))
                 return false;

@@ -1,6 +1,7 @@
 ﻿using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.GameSystems;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,9 @@ using PlayerProductionUpgrades.Storage.Configs;
 using PlayerProductionUpgrades.Storage.Data;
 using RestSharp;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.Entities;
 using Sandbox.Game.Multiplayer;
+using Sandbox.ModAPI;
 using Torch;
 using Torch.API;
 using Torch.API.Managers;
@@ -53,12 +56,43 @@ namespace PlayerProductionUpgrades
         public static bool InitPlugins = false;
         public DateTime NextVoteCheck = DateTime.Now.AddMinutes(1);
         public int ticks = 0;
-        public static Dictionary<ulong, Lazy> RecheckTimer = new Dictionary<ulong, Lazy>();
+        public static ConcurrentDictionary<ulong, Lazy> RecheckTimer = new ConcurrentDictionary<ulong, Lazy>();
 
         public class Lazy
         {
             public DateTime CheckTime;
         }
+
+        public static Dictionary<long, bool> IsClustered = new Dictionary<long, bool>();
+        public static Dictionary<long, DateTime> NextClusterCheck = new Dictionary<long, DateTime>();
+
+        public static bool ClusterCheck(MyCubeGrid grid)
+        {
+            var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
+            var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Count();
+
+            return gridCount > Config.NerfClusteredGridsAboveCount;
+        }
+
+        public static bool IsPlayerClustered(long playerIdentityId, MyCubeGrid grid)
+        {
+            if (NextClusterCheck.TryGetValue(playerIdentityId, out var time))
+            {
+                if (DateTime.Now >= time)
+                {
+                    IsClustered[playerIdentityId] = ClusterCheck(grid);
+                    NextClusterCheck[playerIdentityId] = DateTime.Now.AddMinutes(5);
+                }
+            }
+            else
+            {
+                NextClusterCheck.Add(playerIdentityId, DateTime.Now.AddMinutes(5));
+                IsClustered.Add(playerIdentityId, ClusterCheck(grid));
+            }
+
+            return IsClustered[playerIdentityId];
+        }
+
         public async override void Update()
         {
             if (!InitPlugins && ticks == 0)
@@ -76,15 +110,15 @@ namespace PlayerProductionUpgrades
             var ServerKey = Core.Config.VoteApiKey;
             foreach (var player in RecheckTimer.Where(x => x.Value.CheckTime <= DateTime.Now))
             {
-            //    Log.Info($"{player.Key} checking");
-         
+                //    Log.Info($"{player.Key} checking");
+
                 //var client = new RestClient($"https://space-engineers.com/api/?object=servers&element=voters&key={ServerKey}&month={Period}&format={Format}&rank={Value}&limit={Limit}");
                 var client = new RestClient($"https://space-engineers.com/api/?object=votes&element=claim&key={ServerKey}&steamid={player.Key}");
                 var request = new RestRequest();
                 var result = await client.PostAsync(request);
                 if (result.IsSuccessful)
                 {
-               //     Log.Info($"{result.Content}");
+                    //     Log.Info($"{result.Content}");
                     switch (result.Content.ToString())
                     {
                         case "1":
@@ -92,18 +126,18 @@ namespace PlayerProductionUpgrades
                             var playerData = Core.PlayerStorageProvider.GetPlayerData(player.Key);
                             playerData.VoteBuffedUntil = DateTime.Now.AddHours(24);
                             PlayerStorageProvider.SavePlayerData(playerData);
-                     //       Log.Info($"{player.Key} has voted and is getting buffed for 24 hours");
-                           temp.Add(player.Key);
+                            //       Log.Info($"{player.Key} has voted and is getting buffed for 24 hours");
+                            temp.Add(player.Key);
                             break;
                         default:
                             RecheckTimer[player.Key].CheckTime = DateTime.Now.AddMinutes(10);
-                      //      Log.Info($"{player.Key} has not voted recheck 1 min");
+                            //      Log.Info($"{player.Key} has not voted recheck 1 min");
                             break;
                     }
                 }
                 else
                 {
-                //    Log.Info($"{player.Key} failed query");
+                    //    Log.Info($"{player.Key} failed query");
                 }
             }
 
