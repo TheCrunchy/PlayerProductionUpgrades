@@ -78,6 +78,10 @@ namespace PlayerProductionUpgrades
             }
             Context.Respond("Hours added!");
             EconUtils.TakeMoney(PlayerId, cost);
+            if (Data.PricePerHourEndTimeAssembler < DateTime.Now)
+            {
+                Data.PricePerHourEndTimeAssembler = DateTime.Now;
+            }
             Data.PricePerHourEndTimeAssembler = Data.PricePerHourEndTimeAssembler.AddHours(Hours);
             Core.PlayerStorageProvider.SavePlayerData(Data);
         }
@@ -137,7 +141,11 @@ namespace PlayerProductionUpgrades
             }
             Context.Respond("Hours added!");
             EconUtils.TakeMoney(PlayerId, cost);
-            Data.PricePerHourEndTimeAssembler = Data.PricePerHourEndTimeAssembler.AddHours(Hours);
+            if (Data.PricePerHourEndTimeRefinery < DateTime.Now)
+            {
+                Data.PricePerHourEndTimeRefinery = DateTime.Now;
+            }
+            Data.PricePerHourEndTimeRefinery = Data.PricePerHourEndTimeRefinery.AddHours(Hours);
             Core.PlayerStorageProvider.SavePlayerData(Data);
         }
 
@@ -263,20 +271,18 @@ namespace PlayerProductionUpgrades
             var playerData = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
             if (Core.Config.MakePlayersPayPerHour)
             {
-                if (DateTime.Now < playerData.PricePerHourEndTimeAssembler)
-                {
-                    sb.AppendLine($"Refinery Hours: {(playerData.PricePerHourEndTimeAssembler - DateTime.Now).TotalHours}");
-                }
-                if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
-                {
-                    sb.AppendLine($"Assembler Hours: {(playerData.PricePerHourEndTimeRefinery - DateTime.Now).TotalHours}");
-                }
+                sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeAssembler
+                    ? $"Refinery Hours: {(playerData.PricePerHourEndTimeAssembler - DateTime.Now).TotalHours}"
+                    : $"Refinery Hours: 0");
+                sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeRefinery
+                    ? $"Assembler Hours: {(playerData.PricePerHourEndTimeRefinery - DateTime.Now).TotalHours}"
+                    : $"Assembler Hours: 0");
             }
             foreach (var upgradeTypes in Core.ConfigProvider.Upgrades)
             {
                 foreach (var (k, upgrade) in upgradeTypes.Value)
                 {
-                    sb.AppendLine($"Current Upgrade Level {playerData.GetUpgradeLevel(upgradeTypes.Key)} for {k}");
+                    sb.AppendLine($"Current Upgrade Level {playerData.GetUpgradeLevel(upgradeTypes.Key)} of {k}");
                     sb.AppendLine("Upgrade number " + k);
                     if (upgrade.MoneyRequired > 0)
                     {
@@ -290,7 +296,7 @@ namespace PlayerProductionUpgrades
                     {
                         foreach (var block in buffed.buffs.Where(block => block.Enabled))
                         {
-                            sb.AppendLine($"Buffs speed for {block.SubtypeId} by {buffed.PercentageBuff * 100}%");
+                            sb.AppendLine($"Buffs {upgradeTypes.Key.ToString()} for {block.SubtypeId} by {buffed.PercentageBuff * 100}%");
                         }
                     }
                     sb.AppendLine("");
