@@ -272,11 +272,15 @@ namespace PlayerProductionUpgrades
             if (Core.Config.MakePlayersPayPerHour)
             {
                 sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeAssembler
-                    ? $"Refinery Hours: {(playerData.PricePerHourEndTimeAssembler - DateTime.Now).TotalHours}"
-                    : $"Refinery Hours: 0");
+                    ? $"Assembler Time: {new DateTime((playerData.PricePerHourEndTimeAssembler - DateTime.Now).Ticks):dd:HH:mm} "
+                    : $"Assembler Time: 0");
                 sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeRefinery
-                    ? $"Assembler Hours: {(playerData.PricePerHourEndTimeRefinery - DateTime.Now).TotalHours}"
-                    : $"Assembler Hours: 0");
+                    ? $"Refinery Time: {new DateTime((playerData.PricePerHourEndTimeRefinery - DateTime.Now).Ticks):dd:HH:mm}"
+                    : $"Refinery Time: 0");
+
+                sb.AppendLine("");
+                sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+                sb.AppendLine("");
             }
             foreach (var upgradeTypes in Core.ConfigProvider.Upgrades)
             {
