@@ -43,27 +43,6 @@ namespace PlayerProductionUpgrades.Patches
             }
 
             var playerData = Core.PlayerStorageProvider.GetPlayerData(SteamId);
-            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.RefineryYield);
-            if (upgradeLevel > 0)
-            {
-                var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
-                if (upgrade == null) return buff;
-                if (Core.Config.MakePlayersPayPerHour)
-                {
-                    if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
-                    {
-                        var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                        var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                        buff += temp;
-                    }
-                }
-                else
-                {
-                    var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                    var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                    buff += temp;
-                }
-            }
 
             if (Core.Config.DoVoteBuffs)
             {
@@ -76,6 +55,40 @@ namespace PlayerProductionUpgrades.Patches
                     playerData.AddToChecking();
                 }
             }
+
+            var upgradeLevel = playerData.GetUpgradeLevel(UpgradeType.RefineryYield);
+            if (upgradeLevel > 0)
+            {
+                var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
+                if (upgrade != null)
+                {
+                    if (Core.Config.MakePlayersPayPerHour)
+                    {
+                        if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
+                        {
+                            var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                            var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                            if (percentageBuff != null)
+                            {
+                                var temp = (float)percentageBuff;
+                                buff += temp;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                        var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                        if (percentageBuff != null)
+                        {
+                            var temp = (float)percentageBuff;
+                            buff += temp;
+                        }
+                    }
+
+                }
+            }
+
             if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
             if (Core.GetAllianceRefineryModifier == null)
@@ -119,12 +132,12 @@ namespace PlayerProductionUpgrades.Patches
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefinerySpeed);
                 if (upgrade == null) return buff;
                 var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                buff += temp;
-            }
-            else
-            {
-                return buff;
+                var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                if (percentageBuff != null)
+                {
+                    var temp = (float)percentageBuff;
+                    buff += temp;
+                }
             }
             return buff;
         }

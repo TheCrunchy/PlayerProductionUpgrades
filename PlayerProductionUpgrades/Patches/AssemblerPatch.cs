@@ -60,8 +60,12 @@ namespace PlayerProductionUpgrades.Patches
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
                 if (upgrade == null) return buff;
                 var subType = Assembler.BlockDefinition.Id.SubtypeName;
-                var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                buff += temp;
+                var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                if (percentageBuff != null)
+                {
+                    var temp = (float)percentageBuff;
+                    buff += temp;
+                }
             }
             return buff;
         }
