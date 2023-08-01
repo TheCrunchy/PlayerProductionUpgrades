@@ -281,8 +281,6 @@ namespace PlayerProductionUpgrades
                     : $"Refinery Hours Purchased: 0");
 
                 sb.AppendLine("");
-                sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-                sb.AppendLine("");
             }
             foreach (var upgradeTypes in Core.ConfigProvider.Upgrades)
             {
