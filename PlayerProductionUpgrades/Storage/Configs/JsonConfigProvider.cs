@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using PlayerProductionUpgrades.Helpers;
 using PlayerProductionUpgrades.Interfaces;
 using PlayerProductionUpgrades.Models;
@@ -96,7 +97,16 @@ namespace PlayerProductionUpgrades.Storage.Configs
 
         public Upgrade GetUpgrade(int Level, UpgradeType type)
         {
-            if (!Upgrades.TryGetValue(type, out var temp)) return null;
+            if (!Upgrades.TryGetValue(type, out var temp))
+            {
+                var tempUp = Upgrades.FirstOrDefault(x => x.Key == type).Value ?? null;
+                if (tempUp == null)
+                {
+                    return new Upgrade();
+                }
+
+                return tempUp.OrderBy(x => x.Value).First().Value;
+            }
             return temp.TryGetValue(Level, out var upgrade) ? upgrade : null;
         }
     }

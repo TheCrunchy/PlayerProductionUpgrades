@@ -47,25 +47,21 @@ namespace PlayerProductionUpgrades.Patches
             if (upgradeLevel > 0)
             {
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
-
-                if (upgrade != null)
+                if (upgrade == null) return buff;
+                if (Core.Config.MakePlayersPayPerHour)
                 {
-                    if (Core.Config.MakePlayersPayPerHour)
-                    {
-                        if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
-                        {
-                            var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                            var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                            buff += temp;
-                        }
-                    }
-                    else
+                    if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
                     {
                         var subType = Refinery.BlockDefinition.Id.SubtypeName;
                         var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
                         buff += temp;
                     }
-
+                }
+                else
+                {
+                    var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                    var temp = (float)upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                    buff += temp;
                 }
             }
 
