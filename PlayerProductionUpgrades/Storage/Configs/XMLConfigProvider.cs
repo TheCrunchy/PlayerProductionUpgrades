@@ -117,17 +117,24 @@ namespace PlayerProductionUpgrades.Storage.Configs
 
         public Upgrade GetUpgrade(int Level, UpgradeType type)
         {
-            if (!Upgrades.TryGetValue(type, out var temp))
+            try
             {
-                var tempUp = Upgrades.FirstOrDefault(x => x.Key == type).Value ?? null;
-                if (tempUp == null)
+                if (!Upgrades.TryGetValue(type, out var temp))
                 {
-                    return new Upgrade();
-                }
+                    var tempUp = Upgrades.FirstOrDefault(x => x.Key == type).Value ?? null;
+                    if (tempUp == null)
+                    {
+                        return new Upgrade();
+                    }
 
-                return tempUp.OrderBy(x => x.Value).First().Value;
+                    return tempUp.OrderBy(x => x.Value).First().Value;
+                }
+                return temp.TryGetValue(Level, out var upgrade) ? upgrade : null;
             }
-            return temp.TryGetValue(Level, out var upgrade) ? upgrade : null;
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
