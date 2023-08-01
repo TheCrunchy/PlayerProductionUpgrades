@@ -271,12 +271,14 @@ namespace PlayerProductionUpgrades
             var playerData = Core.PlayerStorageProvider.GetPlayerData(Context.Player.SteamUserId);
             if (Core.Config.MakePlayersPayPerHour)
             {
+                sb.AppendLine("Hours");
+                sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
                 sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeAssembler
-                    ? $"Assembler Time: {new DateTime((playerData.PricePerHourEndTimeAssembler - DateTime.Now).Ticks):dd:HH:mm} "
-                    : $"Assembler Time: 0");
+                    ? $"Assembler Hours Purchased: {new DateTime((playerData.PricePerHourEndTimeAssembler - DateTime.Now).Ticks):dd:HH:mm} "
+                    : $"Assembler Hours Purchased: 0");
                 sb.AppendLine(DateTime.Now < playerData.PricePerHourEndTimeRefinery
-                    ? $"Refinery Time: {new DateTime((playerData.PricePerHourEndTimeRefinery - DateTime.Now).Ticks):dd:HH:mm}"
-                    : $"Refinery Time: 0");
+                    ? $"Refinery Hours Purchased: {new DateTime((playerData.PricePerHourEndTimeRefinery - DateTime.Now).Ticks):dd:HH:mm}"
+                    : $"Refinery Hours Purchased: 0");
 
                 sb.AppendLine("");
                 sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
@@ -286,6 +288,8 @@ namespace PlayerProductionUpgrades
             {
                 foreach (var (k, upgrade) in upgradeTypes.Value)
                 {
+                    sb.AppendLine("Upgrades");
+                    sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
                     sb.AppendLine($"Current Upgrade Level {playerData.GetUpgradeLevel(upgradeTypes.Key)} of {k}");
                     sb.AppendLine("Upgrade number " + k);
                     if (upgrade.MoneyRequired > 0)
@@ -307,7 +311,7 @@ namespace PlayerProductionUpgrades
                 }
             }
 
-            var message = new DialogMessage("Available upgrades", "", sb.ToString());
+            var message = new DialogMessage("Available & Purchased Upgrades", "", sb.ToString());
             ModCommunication.SendMessageTo(message, Context.Player.SteamUserId);
         }
     }
