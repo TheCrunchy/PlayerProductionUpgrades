@@ -128,6 +128,7 @@
     <Compile Include="Helpers\EconUtils.cs" />
     <Compile Include="Helpers\FacUtils.cs" />
     <Compile Include="Helpers\FileUtils.cs" />
+    <Compile Include="Helpers\GPSHelper.cs" />
     <Compile Include="Helpers\GridFinder.cs" />
     <Compile Include="Helpers\IdentityHelper.cs" />
     <Compile Include="Helpers\InventoryHelper.cs" />

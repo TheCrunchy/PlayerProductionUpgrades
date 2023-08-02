@@ -15,9 +15,12 @@ using PlayerProductionUpgrades.Storage;
 using PlayerProductionUpgrades.Storage.Configs;
 using PlayerProductionUpgrades.Storage.Data;
 using RestSharp;
+using Sandbox.Definitions;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Character;
 using Sandbox.Game.Multiplayer;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Torch;
 using Torch.API;
@@ -69,9 +72,25 @@ namespace PlayerProductionUpgrades
         public static bool ClusterCheck(MyCubeGrid grid)
         {
             var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
-            var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere).OfType<MyCubeGrid>().Count();
+            var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
+            var players = gridCount.OfType<MyCharacter>();
 
-            return gridCount > Config.NerfClusteredGridsAboveCount;
+            var isClustering = gridCount.OfType<MyCubeGrid>().Count() > Config.NerfClusteredGridsAboveCount;
+            if (Core.Config.SendGPSForClusters && isClustering)
+            {
+                var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+                foreach (var grids in gridCount.OfType<MyCubeGrid>())
+                {
+                    var gps = GPSHelper.CreateGps(grids.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", "Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
+
+                    foreach (MyCharacter player in players)
+                    {
+                        var id = player.GetIdentity().IdentityId;
+                        gpscol.SendAddGpsRequest(id, ref gps);
+                    }
+                }
+            }
+            return isClustering;
         }
 
         public static bool IsPlayerClustered(long playerIdentityId, MyCubeGrid grid)
@@ -112,32 +131,38 @@ namespace PlayerProductionUpgrades
             {
                 //    Log.Info($"{player.Key} checking");
 
-                //var client = new RestClient($"https://space-engineers.com/api/?object=servers&element=voters&key={ServerKey}&month={Period}&format={Format}&rank={Value}&limit={Limit}");
-                var client = new RestClient($"https://space-engineers.com/api/?object=votes&element=claim&key={ServerKey}&steamid={player.Key}");
-                var request = new RestRequest();
-                var result = await client.PostAsync(request);
-                if (result.IsSuccessful)
+                try
                 {
-                    //     Log.Info($"{result.Content}");
-                    switch (result.Content.ToString())
+                    //var client = new RestClient($"https://space-engineers.com/api/?object=servers&element=voters&key={ServerKey}&month={Period}&format={Format}&rank={Value}&limit={Limit}");
+                    var client = new RestClient($"https://space-engineers.com/api/?object=votes&element=claim&key={ServerKey}&steamid={player.Key}");
+                    var request = new RestRequest();
+                    var result = await client.PostAsync(request);
+                    if (result.IsSuccessful)
                     {
-                        case "1":
-                        case "2":
-                            var playerData = Core.PlayerStorageProvider.GetPlayerData(player.Key);
-                            playerData.VoteBuffedUntil = DateTime.Now.AddHours(24);
-                            PlayerStorageProvider.SavePlayerData(playerData);
-                            //       Log.Info($"{player.Key} has voted and is getting buffed for 24 hours");
-                            temp.Add(player.Key);
-                            break;
-                        default:
-                            RecheckTimer[player.Key].CheckTime = DateTime.Now.AddMinutes(10);
-                            //      Log.Info($"{player.Key} has not voted recheck 1 min");
-                            break;
+                        //     Log.Info($"{result.Content}");
+                        switch (result.Content.ToString())
+                        {
+                            case "1":
+                            case "2":
+                                var playerData = Core.PlayerStorageProvider.GetPlayerData(player.Key);
+                                playerData.VoteBuffedUntil = DateTime.Now.AddHours(24);
+                                PlayerStorageProvider.SavePlayerData(playerData);
+                                //       Log.Info($"{player.Key} has voted and is getting buffed for 24 hours");
+                                temp.Add(player.Key);
+                                break;
+                            default:
+                                RecheckTimer[player.Key].CheckTime = DateTime.Now.AddMinutes(10);
+                                //      Log.Info($"{player.Key} has not voted recheck 1 min");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        //    Log.Info($"{player.Key} failed query");
                     }
                 }
-                else
+                catch (Exception)
                 {
-                    //    Log.Info($"{player.Key} failed query");
                 }
             }
 

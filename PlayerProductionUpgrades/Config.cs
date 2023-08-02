@@ -25,5 +25,6 @@ namespace PlayerProductionUpgrades
         public int NerfClusteredGridsAboveCount = 3;
         public bool NerfClusteredGrids = false;
         public int ClusterDistanceMetres = 15000;
+        public Boolean SendGPSForClusters = true;
     }
 }
