@@ -79,10 +79,9 @@ namespace PlayerProductionUpgrades
             if (Core.Config.SendGPSForClusters && isClustering)
             {
                 var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-                foreach (var grids in gridCount.OfType<MyCubeGrid>())
+                foreach (var grids in gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 50))
                 {
                     var gps = GPSHelper.CreateGps(grids.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", "Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
-
                     foreach (MyCharacter player in players)
                     {
                         var id = player.GetIdentity().IdentityId;
