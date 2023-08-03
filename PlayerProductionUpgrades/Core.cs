@@ -71,33 +71,40 @@ namespace PlayerProductionUpgrades
 
         public static bool ClusterCheck(MyCubeGrid grid)
         {
-            var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
-            var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
-            var players = gridCount.OfType<MyCharacter>();
-
-            var isClustering = gridCount.OfType<MyCubeGrid>().Count() > Config.NerfClusteredGridsAboveCount;
-            if (Core.Config.SendGPSForClusters && isClustering)
+            try
             {
-                var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
-                foreach (var grids in gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 50))
+                var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
+                var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
+                var players = gridCount.OfType<MyCharacter>();
+                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 5 && !x.Closed);
+                var isClustering = grids.Count() > Config.NerfClusteredGridsAboveCount;
+                if (Core.Config.SendGPSForClusters && isClustering)
                 {
-                    if (grids.Closed)
+                    var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
+                    foreach (var gridCheck in grids)
                     {
-                        continue;
-                    }
-                    var gps = GPSHelper.CreateGps(grids.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", "Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
-                    foreach (MyCharacter player in players)
-                    {
-                        var id = player.GetIdentity().IdentityId;
-                        gpscol.SendAddGpsRequest(id, ref gps);
+                        var gps = GPSHelper.CreateGps(gridCheck.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", "Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
+                        foreach (MyCharacter player in players)
+                        {
+                            var id = player.GetIdentity().IdentityId;
+                            gpscol.SendAddGpsRequest(id, ref gps);
+                        }
                     }
                 }
+                return isClustering;
             }
-            return isClustering;
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public static bool IsPlayerClustered(long playerIdentityId, MyCubeGrid grid)
         {
+            if (!Core.Config.NerfClusteredGrids)
+            {
+                return false;
+            }
             if (NextClusterCheck.TryGetValue(playerIdentityId, out var time))
             {
                 if (DateTime.Now >= time)
