@@ -76,7 +76,7 @@ namespace PlayerProductionUpgrades
                 var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
                 var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
                 var players = gridCount.OfType<MyCharacter>();
-                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 5 && !x.Closed);
+                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 5 && !x.Closed && x.Projector == null);
                 var isClustering = grids.Count() > Config.NerfClusteredGridsAboveCount;
                 if (Core.Config.SendGPSForClusters && isClustering)
                 {
