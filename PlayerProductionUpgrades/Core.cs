@@ -45,6 +45,7 @@ namespace PlayerProductionUpgrades
         public static ITorchPlugin Alliances;
         public static MethodInfo GetAllianceAssemblerModifier;
         public static MethodInfo GetAllianceRefineryModifier;
+        public static MethodInfo GetAllianceRefinerySpeedModifier;
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
@@ -76,7 +77,7 @@ namespace PlayerProductionUpgrades
                 var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
                 var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
                 var players = gridCount.OfType<MyCharacter>();
-                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 5 && !x.Closed && x.Projector == null);
+                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 50 && !x.Closed && x.Projector == null);
                 var isClustering = grids.Count() > Config.NerfClusteredGridsAboveCount;
                 if (Core.Config.SendGPSForClusters && isClustering)
                 {
@@ -194,6 +195,7 @@ namespace PlayerProductionUpgrades
                         AlliancePlugin.GetType().Assembly.GetType("AlliancesPlugin.Integrations.AllianceIntegrationCore");
 
                     GetAllianceRefineryModifier = AllianceIntegration.GetMethod("GetRefineryYieldMultiplier", BindingFlags.Public | BindingFlags.Static);
+                    GetAllianceRefinerySpeedModifier = AllianceIntegration.GetMethod("GetRefinerySpeedMultiplier", BindingFlags.Public | BindingFlags.Static);
                     GetAllianceAssemblerModifier = AllianceIntegration.GetMethod("GetAssemblerSpeedMultiplier", BindingFlags.Public | BindingFlags.Static);
                     Alliances = AlliancePlugin;
                     AlliancePluginInstalled = true;

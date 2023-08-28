@@ -139,7 +139,15 @@ namespace PlayerProductionUpgrades.Patches
                     buff += temp;
                 }
             }
-            return buff;
+
+            if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
+            var methodInput = new object[] { PlayerId, Refinery };
+            if (Core.GetAllianceRefinerySpeedModifier == null)
+            {
+                return buff;
+            }
+            var multiplier = (float)Core.GetAllianceRefinerySpeedModifier.Invoke(null, methodInput);
+            return buff *= multiplier;
         }
 
         public static Boolean ChangeRequirementsToResults(MyBlueprintDefinitionBase queueItem, MyFixedPoint blueprintAmount, MyRefinery __instance)
@@ -166,6 +174,11 @@ namespace PlayerProductionUpgrades.Patches
                 buff *= Core.Config.ClusterNerfDefaultLoses75Percent;
             }
 
+            if (!__instance.CubeGrid.IsStatic)
+            {
+                buff *= Core.Config.DynamicGridsProductionMultiplier;
+                speedBuff *= Core.Config.DynamicGridsProductionMultiplier;
+            }
             blueprintAmount *= (MyFixedPoint)speedBuff;
 
 

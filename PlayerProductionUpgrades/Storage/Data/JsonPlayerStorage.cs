@@ -25,19 +25,27 @@ namespace PlayerProductionUpgrades.Storage.Data
 
         public PlayerData LoadPlayerData(ulong SteamId)
         {
-            var path = $"{FolderPath}//{SteamId}.json";
-            if (File.Exists(path))
+            try
             {
-                var existing = _utils.ReadFromJsonFile<PlayerData>(path);
-                PlayerData.Remove(SteamId);
-                PlayerData.Add(SteamId, existing);
-                return existing;
+                var path = $"{FolderPath}//{SteamId}.json";
+                if (File.Exists(path))
+                {
+                    var existing = _utils.ReadFromJsonFile<PlayerData>(path);
+                    PlayerData.Remove(SteamId);
+                    PlayerData.Add(SteamId, existing);
+                    return existing;
+                }
+                var newData = new PlayerData();
+                newData.SetupNew();
+                newData.SteamId = SteamId;
+                SavePlayerData(newData);
+                return newData;
             }
-            var newData = new PlayerData();
-            newData.SetupNew();
-            newData.SteamId = SteamId;
-            SavePlayerData(newData);
-            return newData;
+            catch (Exception)
+            {
+            }
+
+            return null;
         }
 
         public void SavePlayerData(PlayerData data)

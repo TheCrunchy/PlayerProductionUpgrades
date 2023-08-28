@@ -87,6 +87,11 @@ namespace PlayerProductionUpgrades.Patches
         public static float PatchMethod(MyAssembler __instance, MyBlueprintDefinitionBase currentBlueprint)
         {
             var buff = GetBuff(__instance.OwnerId, __instance);
+            if (!__instance.CubeGrid.IsStatic)
+            {
+                buff *= Core.Config.DynamicGridsProductionMultiplier;
+            }
+         
             if (Core.IsPlayerClustered(__instance.OwnerId, __instance.CubeGrid) && Core.Config.NerfClusteredGrids)
             {
                 buff *= Core.Config.ClusterNerfDefaultLoses75Percent;

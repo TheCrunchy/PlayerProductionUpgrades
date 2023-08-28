@@ -18,6 +18,11 @@ namespace PlayerProductionUpgrades.Helpers
                 return;
             }
             var data = Core.PlayerStorageProvider.LoadPlayerData(p.SteamId);
+            if (data == null)
+            {  
+                //reload data if necessary
+                return;
+            }
             data.SetLastLogin();
             data.SetBuffedHours();
             Core.PlayerStorageProvider.SavePlayerData(data);
@@ -30,6 +35,11 @@ namespace PlayerProductionUpgrades.Helpers
                 return;
             }
             var data = Core.PlayerStorageProvider.LoadPlayerData(p.SteamId);
+            if (data == null)
+            {
+                //reload data if necessary
+                return;
+            }
             data.SetLastLogout();
             Core.PlayerStorageProvider.SavePlayerData(data);
         }
