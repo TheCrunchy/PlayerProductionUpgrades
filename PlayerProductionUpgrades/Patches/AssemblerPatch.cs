@@ -78,7 +78,7 @@ namespace PlayerProductionUpgrades.Patches
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
             if (steamId <= 0L) return (float)buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
-            if (!Core.Config.EnableAlliancePluginBuffs) return (float)buff;
+            if (!Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Assembler };
             var multiplier = (double)Core.GetAllianceAssemblerModifier.Invoke(Core.Alliances, methodInput);
             return (float)(buff *= multiplier) * playerData.GetOfflineBuff();

@@ -89,7 +89,7 @@ namespace PlayerProductionUpgrades.Patches
                 }
             }
 
-            if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
+            if (!Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
             if (Core.GetAllianceRefineryModifier == null)
             {
@@ -102,7 +102,7 @@ namespace PlayerProductionUpgrades.Patches
 
         public static double GetSpeedBuff(long PlayerId, MyRefinery Refinery)
         {
-            float buff = 1;
+            double buff = 1;
             var steamId = MySession.Static.Players.TryGetSteamId(PlayerId);
             if (steamId <= 0L) return buff;
             var playerData = Core.PlayerStorageProvider.GetPlayerData(steamId);
@@ -140,14 +140,14 @@ namespace PlayerProductionUpgrades.Patches
                 }
             }
 
-            if (!Core.Config.EnableAlliancePluginBuffs || !Core.AlliancePluginInstalled) return (float)buff;
+            if (!Core.AlliancePluginInstalled) return (float)buff;
             var methodInput = new object[] { PlayerId, Refinery };
             if (Core.GetAllianceRefinerySpeedModifier == null)
             {
                 return buff;
             }
-            var multiplier = (float)Core.GetAllianceRefinerySpeedModifier.Invoke(null, methodInput);
-            return buff *= multiplier;
+            var multiplier = (double)Core.GetAllianceRefinerySpeedModifier.Invoke(null, methodInput);
+            return  (buff *= multiplier);
         }
 
         public static Boolean ChangeRequirementsToResults(MyBlueprintDefinitionBase queueItem, MyFixedPoint blueprintAmount, MyRefinery __instance)

@@ -10,7 +10,6 @@ namespace PlayerProductionUpgrades
     {
         public string StoragePath = "Default";
         public bool EnableBuyingUpgrades = false;
-        public bool EnableAlliancePluginBuffs = false;
         public bool GiveBuffForOfflineHours = false;
         public float BuffPerHour = 0.5f;
         public int MaximumHoursToBuff = 8;

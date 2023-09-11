@@ -77,14 +77,14 @@ namespace PlayerProductionUpgrades
                 var sphere = new BoundingSphereD(grid.PositionComp.GetPosition(), Config.ClusterDistanceMetres * 2);
                 var gridCount = MyAPIGateway.Entities.GetEntitiesInSphere(ref sphere);
                 var players = gridCount.OfType<MyCharacter>();
-                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 50 && !x.Closed && x.Projector == null);
+                var grids = gridCount.OfType<MyCubeGrid>().Where(x => x.BlocksCount > 50 && x.Projector == null);
                 var isClustering = grids.Count() > Config.NerfClusteredGridsAboveCount;
                 if (Core.Config.SendGPSForClusters && isClustering)
                 {
                     var gpscol = (MyGpsCollection)MyAPIGateway.Session?.GPS;
                     foreach (var gridCheck in grids)
                     {
-                        var gps = GPSHelper.CreateGps(gridCheck.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", "Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
+                        var gps = GPSHelper.CreateGps(gridCheck.PositionComp.GetPosition(), Color.Red, $"Clustered Grid", $"Grid detected clustering, production is nerfed, move away minimum of {Config.ClusterDistanceMetres}M");
                         foreach (MyCharacter player in players)
                         {
                             var id = player.GetIdentity().IdentityId;
