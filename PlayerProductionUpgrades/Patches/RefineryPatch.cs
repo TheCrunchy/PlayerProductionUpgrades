@@ -62,30 +62,20 @@ namespace PlayerProductionUpgrades.Patches
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefineryYield);
                 if (upgrade != null)
                 {
-                    if (Core.Config.MakePlayersPayPerHour)
+                    var subType = Refinery.BlockDefinition.Id.SubtypeName;
+                    var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
+                    if (percentageBuff != null)
                     {
-                        if (DateTime.Now < playerData.PricePerHourEndTimeRefinery)
+                        var temp = (float)percentageBuff;
+                        if (Core.Config.MakePlayersPayPerHour)
                         {
-                            var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                            var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                            if (percentageBuff != null)
+                            if (DateTime.Now > playerData.PricePerHourEndTimeRefinery)
                             {
-                                var temp = (float)percentageBuff;
-                                buff += temp;
+                                temp = (float)(temp * 0.5);
                             }
                         }
+                        buff += temp;
                     }
-                    else
-                    {
-                        var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                        var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                        if (percentageBuff != null)
-                        {
-                            var temp = (float)percentageBuff;
-                            buff += temp;
-                        }
-                    }
-
                 }
             }
 
@@ -122,13 +112,7 @@ namespace PlayerProductionUpgrades.Patches
             //  Core.Log.Info($"{buff}");
             if (upgradeLevel > 0)
             {
-                if (Core.Config.MakePlayersPayPerHour)
-                {
-                    if (DateTime.Now > playerData.PricePerHourEndTimeRefinery)
-                    {
-                        return buff;
-                    }
-                }
+
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefinerySpeed);
                 if (upgrade == null) return buff;
                 var subType = Refinery.BlockDefinition.Id.SubtypeName;
@@ -136,6 +120,13 @@ namespace PlayerProductionUpgrades.Patches
                 if (percentageBuff != null)
                 {
                     var temp = (float)percentageBuff;
+                    if (Core.Config.MakePlayersPayPerHour)
+                    {
+                        if (DateTime.Now > playerData.PricePerHourEndTimeRefinery)
+                        {
+                            temp = (float)(temp * 0.5);
+                        }
+                    }
                     buff += temp;
                 }
             }
@@ -147,7 +138,7 @@ namespace PlayerProductionUpgrades.Patches
                 return buff;
             }
             var multiplier = (double)Core.GetAllianceRefinerySpeedModifier.Invoke(null, methodInput);
-            return  (buff *= multiplier);
+            return (buff *= multiplier);
         }
 
         public static Boolean ChangeRequirementsToResults(MyBlueprintDefinitionBase queueItem, MyFixedPoint blueprintAmount, MyRefinery __instance)

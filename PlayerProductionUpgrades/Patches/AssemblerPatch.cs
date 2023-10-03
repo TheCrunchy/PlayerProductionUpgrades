@@ -50,22 +50,26 @@ namespace PlayerProductionUpgrades.Patches
             }
             if (upgradeLevel > 0)
             {
-                if (Core.Config.MakePlayersPayPerHour)
-                {
-                    if (DateTime.Now > playerData.PricePerHourEndTimeAssembler)
-                    {
-                        return buff;
-                    }
-                }
+             
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.AssemblerSpeed);
+         
                 if (upgrade == null) return buff;
+
                 var subType = Assembler.BlockDefinition.Id.SubtypeName;
                 var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
                 if (percentageBuff != null)
                 {
                     var temp = (float)percentageBuff;
+                    if (Core.Config.MakePlayersPayPerHour)
+                    {
+                        if (DateTime.Now > playerData.PricePerHourEndTimeAssembler)
+                        {
+                            temp = (float)(temp * 0.5);
+                        }
+                    }
                     buff += temp;
                 }
+
             }
             return buff;
         }
