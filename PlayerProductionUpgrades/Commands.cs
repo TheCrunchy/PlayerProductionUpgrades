@@ -284,7 +284,7 @@ namespace PlayerProductionUpgrades
             }
             foreach (var upgradeTypes in Core.ConfigProvider.Upgrades)
             {
-                foreach (var (k, upgrade) in upgradeTypes.Value)
+                foreach (var (k, upgrade) in upgradeTypes.Value.OrderBy(x => x.Key))
                 {
                     sb.AppendLine("Upgrades");
                     sb.AppendLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
