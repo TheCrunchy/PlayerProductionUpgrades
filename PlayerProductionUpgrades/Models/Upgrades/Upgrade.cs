@@ -46,6 +46,7 @@ namespace PlayerProductionUpgrades.Models.Upgrades
         }
         public void PutBuffedInDictionary()
         {
+            buffed.Clear();
             foreach (var buff in BuffedBlocks)
             {
                 foreach (var assembler in buff.buffs.Where(assem => assem.Enabled).Where(assem => !buffed.ContainsKey(assem.SubtypeId)))

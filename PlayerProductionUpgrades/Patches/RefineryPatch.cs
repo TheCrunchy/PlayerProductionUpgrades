@@ -63,8 +63,8 @@ namespace PlayerProductionUpgrades.Patches
                 if (upgrade != null)
                 {
                     var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                    var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                    if (percentageBuff != null)
+                    var percentageBuff = upgrade.GetBuffValue(subType);
+                    if (percentageBuff != 0)
                     {
                         var temp = (float)percentageBuff;
                         if (Core.Config.MakePlayersPayPerHour)
@@ -116,8 +116,8 @@ namespace PlayerProductionUpgrades.Patches
                 var upgrade = Core.ConfigProvider.GetUpgrade(upgradeLevel, UpgradeType.RefinerySpeed);
                 if (upgrade == null) return buff;
                 var subType = Refinery.BlockDefinition.Id.SubtypeName;
-                var percentageBuff = upgrade.BuffedBlocks.FirstOrDefault(x => x.buffs.Any(z => z.Enabled && z.SubtypeId == subType))?.PercentageBuff;
-                if (percentageBuff != null)
+                var percentageBuff = upgrade.GetBuffValue(subType);
+                if (percentageBuff != 0)
                 {
                     var temp = (float)percentageBuff;
                     if (Core.Config.MakePlayersPayPerHour)
